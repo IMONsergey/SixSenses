@@ -44,6 +44,15 @@ export function initializeMediaInteractions(config: MediaConfig, reduced: MediaQ
   galleryMain.style.touchAction = 'pan-y';
   galleryImage.draggable = false;
   galleryPreview.draggable = false;
+  function retainDecodedPreview() {
+    const current = config.gallery[displayedGallery];
+    if (current && galleryPreview.getAttribute('src') !== current.image) {
+      galleryPreview.src = current.image;
+      galleryPreview.alt = current.alt;
+    }
+  }
+  galleryPreview.addEventListener('error', retainDecodedPreview, {signal});
+  if (galleryPreview.complete && !galleryPreview.naturalWidth) retainDecodedPreview();
 
   function finishGalleryTransition() {
     galleryTween?.kill();
@@ -65,7 +74,9 @@ export function initializeMediaInteractions(config: MediaConfig, reduced: MediaQ
     const image = await loadImage(config.gallery[next].image);
     if (id !== galleryRequest) return;
     gallery.removeAttribute('aria-busy');
-    if (!image) { requestedGallery = displayedGallery; return; }
+    // Keep the requested position so another Next can pass a failed photograph.
+    // The visible image and counter commit only after a successful decode.
+    if (!image) return;
     finishGalleryTransition();
     if (next !== displayedGallery) {
       displayedGallery = next;
@@ -92,7 +103,7 @@ export function initializeMediaInteractions(config: MediaConfig, reduced: MediaQ
       if (preview && id === galleryRequest) {
         galleryPreview.src = preview.src;
         galleryPreview.alt = following.alt;
-      }
+      } else if (!preview && id === galleryRequest) retainDecodedPreview();
     });
   }
 

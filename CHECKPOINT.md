@@ -6,7 +6,7 @@ Recovered original copied from `/workspace/scratch/6ba048c62957/sites/SixSenses`
 - Modal and inline forms preserve an unchanged submission UUID across retries and modal reopening. Editing a submitted payload creates a new UUID on the next attempt. Completed forms start a new enquiry on reopening. Pending requests block duplicate submission and temporarily freeze controls.
 - Unsupported AED 5.8 ML, annual 20% appreciation and 7% rental-yield promises removed while retaining the original block geometry.
 - The common enquiry backend and tests are integrated. Current server validation is recorded below.
-- Browser QA uses port 4314 and the server Playwright installation. Its API responses are mocked; no real lead is created.
+- The initial server browser QA used port 4314 and the server Playwright installation. The fresh visual continuation below adds portable runtime/base URL overrides. API responses are mocked; no real lead is created.
 
 ## Publication verification, 2026-11-01
 
@@ -31,3 +31,16 @@ The integration owner reviewed the latest WebKit About reading and investment co
 The release owner confirmed motion UI commit `c326bef95c37fa22e702302756ef7939bfcf94e6` in READY deployment `dpl_B8dyhkonisHH5CmXGSQyAvkUuFLD`. This supersedes the original handoff, which had completed the source implementation and listed server checks but had not yet confirmed publication.
 
 The authoritative record for final commits, deployments and live acceptance across all five sites is [MOTION-RELEASE-2026-11-01.md](https://github.com/IMONsergey/LuxuryRealty/blob/main/docs/MOTION-RELEASE-2026-11-01.md). The server QA evidence and diagnostic limits above remain unchanged. Production loading comparisons are separate from that evidence; this documentation-only publication-status correction adds no new test or performance result.
+
+
+## Fresh visual and interaction continuation, 2026-11-01 v2
+
+A new audit started from published source 1b6be6c. It captured all seven two-state chapters plus Contact/footer, actual native navigation, modal states and every requested responsive size. The fresh deep-gallery reproduction exposed reading-position loss beyond the earlier motion suite's contact checks. The final matchMedia transaction preserves the selected source chapter/view before teardown and after refresh; cached pre-resize geometry also survives document clamping. Zero-duration reduced transitions avoid a transient old chapter height during that restore. Original story timelines remain active.
+
+Text arrows and close/plus/minus glyphs now use decorative SVG. The investment title leads the photographs at progress .305, matching the independently inspected author clip, and stays visible throughout assembly. Failed gallery requests keep the last decoded frame and preview while allowing Next to reach the following photograph and Previous to retry. Sticky legal close controls preserve their original position and remain reachable during native scrolling.
+
+Final local acceptance: 382 section/state/navigation captures across seven Chromium sizes and desktop/mobile WebKit; 111 interaction captures across four sizes; full motion 15/15 in both engines (53.1s); native close 16/16; both-engine reading continuity and failed-image recovery; existing four-width/ten-group browser suite; final TypeScript and production build exit 0. No page errors, unexpected enquiry attempts, failed original assets or text arrows remain in the audited states. All enquiry requests were blocked or mocked.
+
+The complete final source, scope, findings, harness distinctions and limits are documented in docs/VISUAL-AUDIT-2026-11-01.md. Six selected screenshots and source-hashed compact results are commit-ready under docs/verification/design-2026-11-01/. Execution sessions 14822 (strengthened motion) and 73205 (final interactions, all-section visual matrix and base browser) both exited 0. The integration owner's final build HTML hash matches the tested static output. Product source did not change after that build; own servers and browsers are stopped.
+
+This completes the local release handoff. No commit, push or deployment was performed by this audit owner. Publication and live acceptance are maintained in the shared MOTION-RELEASE-2026-11-01.md record linked above.

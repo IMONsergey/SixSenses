@@ -61,7 +61,7 @@ async function ready(base){
   const until=Date.now()+20000;
   while(Date.now()<until&&!report.timedOut){
     if(serverError)throw serverError;
-    if(server.exitCode!==null)throw new Error(`Astro exited before ready (${server.exitCode}).`);
+    if(server&&server.exitCode!==null)throw new Error(`Astro exited before ready (${server.exitCode}).`);
     try{if((await fetch(base,{signal:AbortSignal.timeout(1500)})).ok)return;}catch{}
     await delay(150);
   }
@@ -458,6 +458,35 @@ async function runEngine(name,type,base){
       selected(restored,1);foreground(restored,'new');
       result.samples.push({mode:'restored-desktop',...restored});
     });
+    await step('investment title leads the collage without a blank handoff',async()=>{
+      await seek(page,'investment',.22);
+      const frames=await page.evaluate(()=>new Promise(resolve=>{
+        const chapter=document.getElementById('investment'),stage=chapter.querySelector('.chapter__stage');
+        const start=chapter.getBoundingClientRect().top+scrollY,range=chapter.offsetHeight-stage.offsetHeight;
+        const outgoing=[...chapter.querySelectorAll('.investment__details .chapter-aside,.investment-metrics')],title=chapter.querySelector('.investment__closing>h3');
+        const opacity=element=>{let value=1;for(let node=element;node&&node!==chapter.parentElement;node=node.parentElement){const css=getComputedStyle(node);if(css.visibility==='hidden'||css.display==='none')return 0;value*=Number(css.opacity);}return value;};
+        const samples=[];let first;
+        function frame(now){
+          first??=now;const fraction=Math.min(1,(now-first)/1100);
+          scrollTo({top:start+range*(.22+.48*fraction),behavior:'instant'});
+          samples.push({time:now-first,outgoing:Math.max(...outgoing.map(opacity)),incoming:opacity(title),top:title.getBoundingClientRect().top,view:chapter.dataset.view});
+          if(fraction<1)requestAnimationFrame(frame);else resolve(samples);
+        }
+        requestAnimationFrame(frame);
+      }));
+      assert.ok(frames.length>=8,'The handoff must be observed over multiple rendered frames.');
+      assert.ok(frames.every(frame=>frame.outgoing+frame.incoming>.001),'The investment handoff contains a completely blank frame.');
+      assert.ok(frames.every(frame=>!(frame.outgoing>.05&&frame.incoming>.05)),'Outgoing copy overlaps the incoming central title.');
+      const incoming=frames.filter(frame=>frame.incoming>.9);
+      assert.ok(incoming.length>2,'The central title must appear before the photographs settle.');
+      assert.ok(Math.max(...incoming.map(frame=>frame.top))-Math.min(...incoming.map(frame=>frame.top))<=1,'The central title must stay stationary.');
+      result.samples.push({id:'investment-continuous-handoff',frames});
+      await seek(page,'investment',.43);
+      const sample=await scene(page,'investment','.chapter-aside,.investment-metrics','h3');
+      foreground(sample,'new');selected(sample,1);
+      result.samples.push({progress:.43,...sample});
+      await screenshot('investment-title-before-photographs');
+    });
     await step('investment collage visual snapshot',async()=>{
       const scroll=await seek(page,'investment',.92);
       result.samples.push({id:'investment',progress:.92,...scroll});
@@ -465,7 +494,11 @@ async function runEngine(name,type,base){
         const images=[...document.querySelectorAll('#investment .investment-collage img')];
         return images.length>0&&images.every(image=>image.complete&&image.naturalWidth>0);
       });
+      const completed=await scene(page,'investment','.chapter-aside,.investment-metrics','h3');
+      result.samples.push({progress:.92,...completed});
       await screenshot('investment-collage');
+      result.samples.push({...await scene(page,'investment','.chapter-aside,.investment-metrics','h3'),capturePhase:'after'});
+      foreground(completed,'new');selected(completed,1);
     });
     await step('active RAF and long-task scroll diagnostics',async()=>{
       result.performance=await diagnosticScroll(page);
@@ -544,16 +577,17 @@ async function runEngine(name,type,base){
 }
 
 try{
-  const require=createRequire(process.env.PLAYWRIGHT_PACKAGE||'/home/sergey/.local/share/imon-toolkit/node/node_modules/playwright/package.json');
-  const {chromium,webkit}=require('playwright');
-  const port=await freePort(),base=`http://127.0.0.1:${port}`;
+  const require=createRequire(import.meta.url);
+  const {chromium,webkit}=process.env.PLAYWRIGHT_MODULE?require(process.env.PLAYWRIGHT_MODULE):createRequire(process.env.PLAYWRIGHT_PACKAGE||'/home/sergey/.local/share/imon-toolkit/node/node_modules/playwright/package.json')('playwright');
+  const externalBase=process.env.MOTION_QA_BASE_URL;
+  const port=externalBase?0:await freePort(),base=externalBase||`http://127.0.0.1:${port}`;
   report.base=base;
-  server=spawn(process.execPath,[path.join(root,'node_modules/astro/bin/astro.mjs'),'dev','--host','127.0.0.1','--port',String(port)],{
+  server=externalBase?undefined:spawn(process.execPath,[path.join(root,'node_modules/astro/bin/astro.mjs'),'dev','--ignore-lock','--host','127.0.0.1','--port',String(port)],{
     cwd:root,env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe'],detached:true
   });
   const capture=chunk=>{serverOutput=(serverOutput+chunk.toString()).slice(-12000);};
-  server.stdout.on('data',capture);server.stderr.on('data',capture);
-  server.on('error',error=>{serverError=error;});
+  server?.stdout.on('data',capture);server?.stderr.on('data',capture);
+  server?.on('error',error=>{serverError=error;});
   await ready(base);
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
     if(report.timedOut)break;

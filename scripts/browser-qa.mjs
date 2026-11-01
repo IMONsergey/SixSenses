@@ -5,24 +5,25 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {setTimeout as delay} from 'node:timers/promises';
 import path from 'node:path';
 
-const require=createRequire('/home/sergey/.local/share/imon-toolkit/node/node_modules/playwright/package.json');
-const {chromium}=require('playwright');
-const port=4314,base=`http://127.0.0.1:${port}`,artifacts=path.resolve('artifacts');
+const require=createRequire(import.meta.url);
+const {chromium}=process.env.PLAYWRIGHT_MODULE?require(process.env.PLAYWRIGHT_MODULE):createRequire(process.env.PLAYWRIGHT_PACKAGE||'/home/sergey/.local/share/imon-toolkit/node/node_modules/playwright/package.json')('playwright');
+const externalBase=process.env.BROWSER_QA_BASE_URL||process.env.MOTION_QA_BASE_URL;
+const port=Number(process.env.BROWSER_QA_PORT||14326),base=externalBase||`http://127.0.0.1:${port}`,artifacts=path.resolve('artifacts');
 await mkdir(artifacts,{recursive:true});
 const report={project:'six-senses',startedAt:new Date().toISOString(),widths:[],checks:[],pageErrors:[],assetFailures:[],mockedRequests:[],ok:false};
 let serverOutput='',browser,releaseHeldRequest,serverError,cleanupPromise;
-const server=spawn(process.execPath,['node_modules/astro/bin/astro.mjs','dev','--host','127.0.0.1','--port',String(port)],{cwd:process.cwd(),env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe'],detached:true});
-server.stdout.on('data',chunk=>serverOutput+=chunk.toString());
-server.stderr.on('data',chunk=>serverOutput+=chunk.toString());
-server.on('error',error=>serverError=error);
+const server=externalBase?undefined:spawn(process.execPath,['node_modules/astro/bin/astro.mjs','dev','--ignore-lock','--host','127.0.0.1','--port',String(port)],{cwd:process.cwd(),env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe'],detached:true});
+server?.stdout.on('data',chunk=>serverOutput+=chunk.toString());
+server?.stderr.on('data',chunk=>serverOutput+=chunk.toString());
+server?.on('error',error=>serverError=error);
 async function cleanup(){
  if(cleanupPromise)return cleanupPromise;
  cleanupPromise=(async()=>{
   releaseHeldRequest?.();
   const closingBrowser=browser?browser.close().catch(()=>{}):Promise.resolve();
-  if(server.pid){try{process.kill(-server.pid,'SIGTERM');}catch{}}
+  if(server?.pid){try{process.kill(-server.pid,'SIGTERM');}catch{}}
   await delay(300);
-  if(server.pid&&server.exitCode===null&&server.signalCode===null){try{process.kill(-server.pid,'SIGKILL');}catch{}}
+  if(server?.pid&&server.exitCode===null&&server.signalCode===null){try{process.kill(-server.pid,'SIGKILL');}catch{}}
   await Promise.race([closingBrowser,delay(2000)]);
  })();
  return cleanupPromise;
@@ -38,7 +39,7 @@ async function ready(){
  const until=Date.now()+45000;
  while(Date.now()<until){
   if(serverError)throw serverError;
-  if(server.exitCode!==null)throw new Error(`Astro exited before ready: ${server.exitCode}\n${serverOutput}`);
+  if(server&&server.exitCode!==null)throw new Error(`Astro exited before ready: ${server.exitCode}\n${serverOutput}`);
   try{if((await fetch(base,{signal:AbortSignal.timeout(2000)})).ok)return;}catch{}
   await delay(250);
  }

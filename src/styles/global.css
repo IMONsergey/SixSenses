@@ -13,4 +13,12 @@
 @keyframes dialog-in{from{opacity:0}to{opacity:1}}
 @media(max-width:1100px),(max-height:759px),(pointer:coarse){:root{--gutter:24px}html{scroll-padding-top:80px}.enquiry-modal__layout{grid-template-columns:1fr;padding:90px 24px 40px;gap:20px;max-width:760px}.enquiry-modal__context{display:none}.close-button{right:18px;top:18px}.enquiry-heading h2{font-size:42px}.enquiry-heading>p{font-size:13px}.enquiry-form{margin-top:27px}.field{margin-bottom:24px}.enquiry-success h3{font-size:42px}.small-sheet{padding:65px 25px 35px}.small-sheet h2{font-size:30px}}
 @media(max-width:600px){.form-row{grid-template-columns:1fr;gap:0}.form-bottom{flex-direction:column-reverse;gap:25px}.form-bottom .register-button{width:100%;justify-content:space-between}.field>span{font-size:12px}.field input,.field select,.field textarea{font-size:16px}.field--message textarea{min-height:100px}.consent{font-size:12px;line-height:1.7}.action{font-size:12px}.enquiry-heading h2{font-size:38px}.enquiry-modal__layout{padding-top:90px}.enquiry-success h3{font-size:36px}.floor-plan{height:270px}.floor-plan__drawings{top:40px;height:190px}.floor-plan__main,.floor-plan__orientation{height:190px}.floor-plan--duplex .floor-plan__drawings{height:190px}.floor-plan--duplex .floor-plan__main{height:190px}.floor-plan--duplex .floor-plan__orientation{height:137px;margin-top:20px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:0s!important}}
+/* Vector controls keep their geometry independent of the text font. */
+.ui-icon{display:inline-block;width:1em;height:1em;flex:none;vertical-align:-.125em}
+.close-button,.zoom-toolbar button{display:grid;place-items:center;line-height:1}
+.back-link>.ui-icon{font-size:18px}
+/* Match the original close inset while allowing a short legal sheet to scroll. */
+.small-sheet{--sheet-top:68px;--sheet-side:45px}
+.small-sheet>.close-button{position:sticky;float:right;right:auto;top:calc(16px - var(--sheet-top));margin-top:calc(16px - var(--sheet-top));margin-right:calc(16px - var(--sheet-side))}
+@media(max-width:1100px),(max-height:759px),(pointer:coarse){.small-sheet{--sheet-top:65px;--sheet-side:25px}}

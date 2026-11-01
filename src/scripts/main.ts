@@ -76,8 +76,6 @@ $$<HTMLFormElement>('[data-enquiry-form]').forEach(form=>{
 // The Dprofile sequence reveals the invitation after the new architecture is in place.
 const header=$('.site-header');
 let headerPending=false;
-gsap.registerPlugin(ScrollTrigger);
-ScrollTrigger.config({ignoreMobileResize:true});
 const chapters=$$<HTMLElement>('[data-story]');
 const chapterParts=new Map(chapters.map(chapter=>[chapter,{
  primary:$('.state-primary',chapter),secondary:$('.state-secondary',chapter),
@@ -86,7 +84,7 @@ const chapterParts=new Map(chapters.map(chapter=>[chapter,{
 const sections=$$<HTMLElement>('main>section');
 const navLinks=$$<HTMLAnchorElement>('.desktop-nav a');
 const readingProgress=$('.reading-progress');
-let currentChapter='home',currentStoryView=0,modeRestoreFrame=0,motionInitialized=false;
+let currentChapter='home';
 function setView(chapter:HTMLElement,view:number){
  const parts=chapterParts.get(chapter)!;
  if(chapter.dataset.view!==String(view))chapter.dataset.view=String(view);
@@ -99,6 +97,58 @@ function setView(chapter:HTMLElement,view:number){
 }
 chapters.forEach(chapter=>setView(chapter,Number(chapter.dataset.baseView)||0));
 const stories=new Map<HTMLElement,ScrollTrigger>();
+type ReadingPosition={section:HTMLElement;anchor:HTMLElement;top:number;y:number;width:number;height:number;view:number;mode:'story'|'static'|'flow';progress:number};
+function readPosition():ReadingPosition{
+ const section=sections.find(element=>{const r=element.getBoundingClientRect();return r.top<=innerHeight*.3&&r.bottom>innerHeight*.3;})||sections[0];
+ const parts=chapterParts.get(section),mode=section.classList.contains('is-story')?'story':desktop.matches?'static':'flow';
+ const view=parts?(desktop.matches?Number(section.dataset.view)||0:parts.secondary.getBoundingClientRect().top<=innerHeight*.5?1:0):0;
+ const anchor=parts?(view?parts.secondary:parts.primary):section;
+ return{section,anchor,top:anchor.getBoundingClientRect().top,y:scrollY,width:innerWidth,height:innerHeight,view,mode,progress:stories.get(section)?.progress||0};
+}
+let stablePosition=readPosition(),modePosition:ReadingPosition|null=null,positionFrame=0;
+window.addEventListener('scroll',()=>{
+ if(positionFrame||modePosition)return;
+ positionFrame=requestAnimationFrame(()=>{
+  positionFrame=0;
+  // A resize can clamp scroll before matchMedia runs. Retain the previous viewport's chapter.
+  if(!modePosition&&stablePosition.width===innerWidth&&stablePosition.height===innerHeight)stablePosition=readPosition();
+ });
+},{passive:true});
+window.addEventListener('resize',()=>{
+ cancelAnimationFrame(positionFrame);
+ positionFrame=requestAnimationFrame(()=>{positionFrame=0;if(!modePosition)stablePosition=readPosition();});
+},{passive:true});
+// ScrollTrigger's final-trigger teardown clears its scroll memory. Capture before
+// that transaction, then restore the selected source state after its refresh.
+const motionLifecycle=gsap as typeof gsap & {addEventListener(type:'matchMediaInit'|'matchMedia',listener:()=>void):void};
+motionLifecycle.addEventListener('matchMediaInit',()=>{
+ cancelAnimationFrame(positionFrame);positionFrame=0;
+ modePosition=stablePosition.width!==innerWidth||stablePosition.height!==innerHeight?stablePosition:readPosition();
+});
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ignoreMobileResize:true});
+motionLifecycle.addEventListener('matchMedia',()=>{
+ if(!modePosition)return;
+ const saved=modePosition,parts=chapterParts.get(saved.section),trigger=stories.get(saved.section);
+ if(parts)setView(saved.section,saved.view);
+ let next=saved.y;
+ if(saved.y<1)next=0;
+ else if(trigger){
+  next=saved.mode==='story'?trigger.start+(trigger.end-trigger.start)*saved.progress:storyPosition(trigger,saved.section.id,saved.view);
+ }else{
+  const anchor=parts?(saved.view?parts.secondary:parts.primary):saved.section;
+  const rect=anchor.getBoundingClientRect(),mode=desktop.matches?'static':'flow';
+  const resized=saved.width!==innerWidth||saved.height!==innerHeight;
+  // A pinned chapter and a flowing mobile source state have different heights.
+  // Their shared identity is the selected view, not the old document scroll offset.
+  let top=saved.mode===mode?saved.top:desktop.matches?0:parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||80;
+  if(resized)top=Math.max(top,Math.min(0,innerHeight*.3-rect.height));
+  next=scrollY+rect.top-top;
+ }
+ window.scrollTo({top:Math.max(0,next),behavior:'instant'});
+ ScrollTrigger.update();
+ modePosition=null;stablePosition=readPosition();scheduleHeader();
+});
 const media=gsap.matchMedia();
 const foregrounds:Record<string,[string,string]>={
  home:['h1,.hero-metrics','.invitation-card'],
@@ -110,29 +160,35 @@ const foregrounds:Record<string,[string,string]>={
  investment:['.chapter-aside,.investment-metrics','h3']
 };
 media.add('(min-width:1101px) and (min-height:760px) and (pointer:fine) and (prefers-reduced-motion:no-preference)',()=>{
- const restoreTarget=sections.find(section=>section.id===currentChapter);
- const restoreView=currentStoryView,restoreScroll=motionInitialized&&scrollY>0;
- cancelAnimationFrame(modeRestoreFrame);
  chapters.forEach(chapter=>{
   const {primary,secondary}=chapterParts.get(chapter)!;
   const [outSelector,inSelector]=foregrounds[chapter.id];
   const outgoing=$$(outSelector,primary),incoming=$$(inSelector,secondary);
+  const stationaryTitle=chapter.id==='investment',handoff=stationaryTitle?.305:.54;
   chapter.style.setProperty('--story-duration',chapter.dataset.duration||'2.4');
   chapter.classList.add('is-story');
   gsap.set(primary,{autoAlpha:1});
-  gsap.set(secondary,{autoAlpha:1,yPercent:100});
+  gsap.set(secondary,{autoAlpha:stationaryTitle?0:1,yPercent:stationaryTitle?0:100});
   gsap.set(incoming,{autoAlpha:0,y:28});
   setView(chapter,0);
   const timeline=gsap.timeline({
    defaults:{ease:'none'},
-   onUpdate:()=>{setView(chapter,timeline.progress()>=.54?1:0);scheduleHeader();},
+   onUpdate:()=>{setView(chapter,timeline.progress()>=handoff?1:0);scheduleHeader();},
    scrollTrigger:{trigger:chapter,start:'top top',end:'bottom bottom',scrub:.35,invalidateOnRefresh:true}
   });
   timeline.to({}, {duration:1},0)
-   .to(outgoing,{autoAlpha:0,y:-24,duration:.13,stagger:.015},.16)
-   .to(secondary,{yPercent:0,duration:.28},.28)
-   .set(primary,{autoAlpha:0},.56)
-   .to(incoming,{autoAlpha:1,y:0,duration:chapter.id==='about'?.10:.17,stagger:chapter.id==='about'?.02:.025},.59);
+   .to(outgoing,{autoAlpha:0,y:-24,duration:.13,stagger:.015},.16);
+  if(stationaryTitle){
+   // In the author's sequence the central title is already present before the
+   // photographs arrive. Hand over when the last outgoing item has faded.
+   timeline.set(primary,{autoAlpha:0},handoff)
+    .set(secondary,{autoAlpha:1},handoff)
+    .set(incoming,{autoAlpha:1,y:0},handoff);
+  }else{
+   timeline.to(secondary,{yPercent:0,duration:.28},.28)
+    .set(primary,{autoAlpha:0},.56)
+    .to(incoming,{autoAlpha:1,y:0,duration:chapter.id==='about'?.10:.17,stagger:chapter.id==='about'?.02:.025},.59);
+  }
   if(chapter.id==='home'){
    timeline.to('.hero__photo',{scale:1.045,duration:.55},0);
    timeline.fromTo('.invitation-card',{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)',duration:.18},.56);
@@ -159,25 +215,11 @@ media.add('(min-width:1101px) and (min-height:760px) and (pointer:fine) and (pre
   if(chapter.id==='infrastructure')timeline.fromTo('.wellbeing__closing>div',{y:16},{y:0,duration:.4},.56);
   if(timeline.scrollTrigger)stories.set(chapter,timeline.scrollTrigger);
  });
- if(restoreScroll&&restoreTarget)modeRestoreFrame=requestAnimationFrame(()=>{
-  ScrollTrigger.refresh();
-  const trigger=stories.get(restoreTarget);
-  if(trigger)window.scrollTo({top:storyPosition(trigger,restoreTarget.id,restoreView),behavior:'instant'});
-  else restoreTarget.scrollIntoView({block:'start',behavior:'instant'});
-  scheduleHeader();
- });
  return()=>{
-  cancelAnimationFrame(modeRestoreFrame);
-  const active=sections.find(section=>section.id===currentChapter);
-  const view=currentStoryView;
+  const active=modePosition?.section||stablePosition.section;
+  const view=modePosition?.view??stablePosition.view;
   chapters.forEach(chapter=>{chapter.classList.remove('is-story');chapter.style.removeProperty('--story-duration');setView(chapter,chapter===active?view:Number(chapter.dataset.baseView)||0);});
   stories.clear();
-  if(active&&scrollY>0)modeRestoreFrame=requestAnimationFrame(()=>{
-   const parts=chapterParts.get(active);
-   const target=desktop.matches||!parts?active:view?parts.secondary:parts.primary;
-   target.scrollIntoView({block:'start',behavior:'instant'});
-   scheduleHeader();
-  });
  };
 });
 desktop.addEventListener('change',()=>{chapters.forEach(chapter=>setView(chapter,Number(chapter.dataset.view)||0));scheduleHeader();});
@@ -216,9 +258,7 @@ function updateHeader(){
  }
  const available=document.documentElement.scrollHeight-h;
  currentChapter=active;
- const activeElement=sections.find(section=>section.id===active);
- const activeParts=activeElement&&chapterParts.get(activeElement);
- currentStoryView=activeParts?(desktop.matches?Number(activeElement!.dataset.view)||0:activeParts.secondary.getBoundingClientRect().top<=h*.5?1:0):0;
+ if(!modePosition&&stablePosition.width===innerWidth&&stablePosition.height===innerHeight)stablePosition=readPosition();
  header.classList.toggle('is-scrolled',y>60);
  header.classList.toggle('is-home',desktop.matches&&!!hero&&hero.rect.bottom>h*.5&&(stories.get(hero.element)?.progress||0)<.18&&y<h*.5);
  header.classList.toggle('is-light',light);
@@ -229,7 +269,6 @@ function scheduleHeader(){if(!headerPending){headerPending=true;requestAnimation
 window.addEventListener('scroll',scheduleHeader,{passive:true});
 window.addEventListener('resize',scheduleHeader,{passive:true});
 updateHeader();
-motionInitialized=true;
 
 document.addEventListener('click',event=>{const target=(event.target as HTMLElement).closest<HTMLElement>('button,a');if(!target)return;
  dialogClickOrigin=target;queueMicrotask(()=>{if(dialogClickOrigin===target)dialogClickOrigin=undefined;});
@@ -252,7 +291,7 @@ document.addEventListener('click',event=>{const target=(event.target as HTMLElem
 // The intro is brief, optional and never prevents the document from loading.
 try{if(!reduced.matches&&!sessionStorage.getItem('six-intro-seen')){sessionStorage.setItem('six-intro-seen','1');const intro=$('.intro');intro.classList.add('is-active');gsap.timeline({onComplete:()=>intro.classList.remove('is-active')}).fromTo('.intro .six-logo',{opacity:0,scale:1.1},{opacity:1,scale:1.25,duration:.35}).to('.intro__line',{scaleX:1,duration:.35},.15).to(intro,{opacity:0,duration:.35},.65);}}catch{/* Storage restrictions simply skip the optional intro. */}
 let refreshFrame=0;
-function refreshStories(){cancelAnimationFrame(refreshFrame);refreshFrame=requestAnimationFrame(()=>{ScrollTrigger.refresh();scheduleHeader();});}
+function refreshStories(){cancelAnimationFrame(refreshFrame);refreshFrame=requestAnimationFrame(()=>{if(ScrollTrigger.getAll().length)ScrollTrigger.refresh();scheduleHeader();});}
 window.addEventListener('load',refreshStories,{once:true});
 window.addEventListener('pageshow',refreshStories);
 document.fonts.ready.then(refreshStories);

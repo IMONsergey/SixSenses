@@ -1,0 +1,1915 @@
+{
+  "project": "six-senses",
+  "audit": "2026-11-01-v2",
+  "baseline": "1b6be6cba1fa2c070260fb132dbb2f64e30ef92d",
+  "pass": true,
+  "sourceSha256": {
+    "src/components/Icon.astro": "4cc312d4b5569eaee7dbaf3a2412b5ebceaa4d71c1e34975dc79f926bdc22e71",
+    "src/components/EnquiryForm.astro": "1ef1a216f3a5702b15ba528377df8b056f9a6f46035bf4bd5f2ebf99a4bde999",
+    "src/pages/index.astro": "6cc5d0cc7ed977298601eec88cdaae196d34f866a2a0aa66c01549d94e2ac917",
+    "src/scripts/main.ts": "5c367a77cd8449ff35d56f6e9a1f7a1eac44b044944e2e6219dc5d8a7d406e88",
+    "src/scripts/media-interactions.ts": "3c4e29a51795675034cdaacb4302f200d0d6f37384af83aff11d435d12680d32",
+    "src/styles/global.css": "daedca1d8ff5ccd9778aa77de3293f4792464cabf1920e57dcdbc15f42ec1bce",
+    "src/styles/page.css": "a16634bd7d84ecb385ab00bdfa2779bb4a5701a9a7ba082fb19e381b7666fc46"
+  },
+  "build": {
+    "recordedAt": "2026-11-01T15:20:53.964530+00:00",
+    "baseHead": "1b6be6cba1fa2c070260fb132dbb2f64e30ef92d",
+    "check": {
+      "command": "npm run check",
+      "exitCode": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "htmlSha256": "44119556b1f729556420160fe14a50e44cb0f00aba9e5d159ebd6a7d8aebc6ae",
+      "css": [
+        {
+          "path": "_astro/index.DdgGNn4P.css",
+          "sha256": "7c369f066c2de48c6ae2ba0c89b16b37d9699a8c1711c61eefb3f2ea7a42885a"
+        }
+      ]
+    },
+    "dialogRegression": "root-dialog-after/report.json",
+    "originalPublicBaseline": "root-dialog-before-public/report.json",
+    "nativeWheelNote": "Chromium mobile layout with touch-tap close; desktop WebKit at the same narrow viewport because mobile WebKit does not implement mouse.wheel."
+  },
+  "visual": {
+    "pass": true,
+    "report": "artifacts/pixel-audit-20261101-v2/after/report.json",
+    "captures": 382,
+    "profiles": [
+      {
+        "engine": "chromium",
+        "width": 1440,
+        "height": 900,
+        "captures": 51,
+        "glyphs": [],
+        "errors": [],
+        "continuity": {
+          "requested": 9939.6,
+          "before": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 9940,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": -1030,
+            "targetBottom": 1040,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "reduced": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 3600,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": 0,
+            "targetBottom": 900,
+            "view": "1",
+            "scrollBehavior": "auto",
+            "reduced": true
+          },
+          "restored": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 9940,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": -1030,
+            "targetBottom": 1040,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "honorsReducedScroll": true,
+          "preservesSection": true,
+          "preservesOrlaScroll": true,
+          "mobile": {
+            "gallery": {
+              "top": 450.3125,
+              "bottom": 801.6875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7109,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -439.625,
+            "targetBottom": 861.6875,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "desktop": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 9940,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": -1030,
+            "targetBottom": 1040,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "preservesResizeSection": true
+        }
+      },
+      {
+        "engine": "chromium",
+        "width": 1920,
+        "height": 1080,
+        "captures": 39,
+        "glyphs": [],
+        "errors": [],
+        "continuity": null
+      },
+      {
+        "engine": "chromium",
+        "width": 1024,
+        "height": 900,
+        "captures": 25,
+        "glyphs": [],
+        "errors": [],
+        "continuity": null
+      },
+      {
+        "engine": "chromium",
+        "width": 768,
+        "height": 1024,
+        "captures": 24,
+        "glyphs": [],
+        "errors": [],
+        "continuity": null
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "height": 844,
+        "captures": 41,
+        "glyphs": [],
+        "errors": [],
+        "continuity": {
+          "requested": 7452.96875,
+          "before": {
+            "gallery": {
+              "top": 99.96875,
+              "bottom": 464.609375,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7453,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -789.96875,
+            "targetBottom": 524.609375,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "reduced": {
+            "gallery": {
+              "top": 99.96875,
+              "bottom": 464.609375,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7453,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -789.96875,
+            "targetBottom": 524.609375,
+            "view": "1",
+            "scrollBehavior": "auto",
+            "reduced": true
+          },
+          "restored": {
+            "gallery": {
+              "top": 99.96875,
+              "bottom": 464.609375,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7453,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -789.96875,
+            "targetBottom": 524.609375,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "honorsReducedScroll": true,
+          "preservesSection": true,
+          "preservesOrlaScroll": true
+        }
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "height": 800,
+        "captures": 40,
+        "glyphs": [],
+        "errors": [],
+        "continuity": null
+      },
+      {
+        "engine": "chromium",
+        "width": 844,
+        "height": 390,
+        "captures": 70,
+        "glyphs": [],
+        "errors": [],
+        "continuity": {
+          "requested": 7208.03125,
+          "before": {
+            "gallery": {
+              "top": 100.03125,
+              "bottom": 649,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7208,
+            "viewport": {
+              "width": 844,
+              "height": 390
+            },
+            "targetTop": -737.796875,
+            "targetBottom": 729,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "reduced": {
+            "gallery": {
+              "top": 100.03125,
+              "bottom": 649,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7208,
+            "viewport": {
+              "width": 844,
+              "height": 390
+            },
+            "targetTop": -737.796875,
+            "targetBottom": 729,
+            "view": "1",
+            "scrollBehavior": "auto",
+            "reduced": true
+          },
+          "restored": {
+            "gallery": {
+              "top": 100.03125,
+              "bottom": 649,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7208,
+            "viewport": {
+              "width": 844,
+              "height": 390
+            },
+            "targetTop": -737.796875,
+            "targetBottom": 729,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "honorsReducedScroll": true,
+          "preservesSection": true,
+          "preservesOrlaScroll": true
+        }
+      },
+      {
+        "engine": "webkit",
+        "width": 1440,
+        "height": 900,
+        "captures": 51,
+        "glyphs": [],
+        "errors": [],
+        "continuity": {
+          "requested": 9939.6,
+          "before": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 9939,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": -1029,
+            "targetBottom": 1041,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "reduced": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 3600,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": 0,
+            "targetBottom": 900,
+            "view": "1",
+            "scrollBehavior": "auto",
+            "reduced": true
+          },
+          "restored": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 9939,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": -1029,
+            "targetBottom": 1041,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "honorsReducedScroll": true,
+          "preservesSection": true,
+          "preservesOrlaScroll": true,
+          "mobile": {
+            "gallery": {
+              "top": 449.25,
+              "bottom": 813.890625,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7084,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -439.75,
+            "targetBottom": 873.890625,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "desktop": {
+            "gallery": {
+              "top": 110.421875,
+              "bottom": 861.921875,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 9939,
+            "viewport": {
+              "width": 1440,
+              "height": 900
+            },
+            "targetTop": -1029,
+            "targetBottom": 1041,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "preservesResizeSection": true
+        }
+      },
+      {
+        "engine": "webkit",
+        "width": 390,
+        "height": 844,
+        "captures": 41,
+        "glyphs": [],
+        "errors": [],
+        "continuity": {
+          "requested": 7433.25,
+          "before": {
+            "gallery": {
+              "top": 100.25,
+              "bottom": 464.890625,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7433,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -788.75,
+            "targetBottom": 524.890625,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "reduced": {
+            "gallery": {
+              "top": 100.25,
+              "bottom": 464.890625,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7433,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -788.75,
+            "targetBottom": 524.890625,
+            "view": "1",
+            "scrollBehavior": "auto",
+            "reduced": true
+          },
+          "restored": {
+            "gallery": {
+              "top": 100.25,
+              "bottom": 464.890625,
+              "visible": true
+            },
+            "active": "interiors",
+            "scrollY": 7433,
+            "viewport": {
+              "width": 390,
+              "height": 844
+            },
+            "targetTop": -788.75,
+            "targetBottom": 524.890625,
+            "view": "1",
+            "scrollBehavior": "smooth",
+            "reduced": false
+          },
+          "honorsReducedScroll": true,
+          "preservesSection": true,
+          "preservesOrlaScroll": true
+        }
+      }
+    ],
+    "pageErrors": [],
+    "assetFailures": [],
+    "apiRequests": []
+  },
+  "interactions": {
+    "pass": true,
+    "report": "artifacts/pixel-audit-20261101-v2/interactions-final/report.json",
+    "captures": 111,
+    "profiles": [
+      {
+        "engine": "chromium",
+        "width": 1440,
+        "height": 900,
+        "captures": 47,
+        "checks": [
+          "all gallery photographs, zoom, rapid keyboard and live reduced-motion continuity",
+          "both layouts, carousel controls, unit panels and nested plan zoom",
+          "contact-form: validation, other-country, legal dialogs, mocked error retention and success",
+          "modal-form: validation, other-country, legal dialogs, mocked error retention and success"
+        ],
+        "issues": []
+      },
+      {
+        "engine": "chromium",
+        "width": 390,
+        "height": 844,
+        "captures": 37,
+        "checks": [
+          "menu keyboard loop, Escape and focus restoration",
+          "all gallery photographs, zoom, rapid keyboard and live reduced-motion continuity",
+          "both layouts, carousel controls, unit panels and nested plan zoom",
+          "contact-form: validation, other-country, legal dialogs, mocked error retention and success",
+          "modal-form: validation, other-country, legal dialogs, mocked error retention and success"
+        ],
+        "issues": []
+      },
+      {
+        "engine": "chromium",
+        "width": 320,
+        "height": 844,
+        "captures": 13,
+        "checks": [
+          "menu keyboard loop, Escape and focus restoration",
+          "both layouts, carousel controls, unit panels and nested plan zoom"
+        ],
+        "issues": []
+      },
+      {
+        "engine": "chromium",
+        "width": 844,
+        "height": 390,
+        "captures": 14,
+        "checks": [
+          "menu keyboard loop, Escape and focus restoration",
+          "both layouts, carousel controls, unit panels and nested plan zoom"
+        ],
+        "issues": []
+      }
+    ],
+    "runs": [
+      {
+        "report": "remaining-profile-run.json",
+        "widths": [
+          1440,
+          390
+        ]
+      },
+      {
+        "report": "../interactions-first-final/report.json",
+        "includedWidths": [
+          320,
+          844
+        ],
+        "note": "Completed compact profiles retained. The two failed harness profiles in that earlier run were replaced by the current actual-control run."
+      }
+    ],
+    "pageErrors": [],
+    "unexpectedRequests": []
+  },
+  "motion": {
+    "pass": true,
+    "elapsedMs": 53054,
+    "engines": [
+      {
+        "engine": "chromium",
+        "pass": true,
+        "checks": [
+          "desktop normal-motion initialization",
+          "skip link moves keyboard focus into the main content",
+          "hero primary, opaque handoff and invitation foreground",
+          "about separated foregrounds and meaningful tower pan",
+          "primary CTA and nested keyboard dialog focus",
+          "direct location navigation and interactive secondary map",
+          "direct layouts navigation and keyboard residence details",
+          "short desktop natural flow and desktop restoration preserve layouts",
+          "investment title leads the collage without a blank handoff",
+          "investment collage visual snapshot",
+          "active RAF and long-task scroll diagnostics",
+          "contact navigation and live reduced-motion change preserve contact",
+          "touch 390x844 natural flow, overflow and accessible content",
+          "mobile navigation dialog keyboard focus and contact link",
+          "no browser errors, failed original assets or enquiry attempts"
+        ],
+        "investmentHandoff": {
+          "frames": 66,
+          "minCombinedForegroundOpacity": 0.051,
+          "simultaneousForegroundFrames": 0,
+          "titleTravelPx": 0.0,
+          "settledSamples": [
+            {
+              "progress": 0.43,
+              "id": "investment",
+              "view": "1",
+              "scrollY": 13772,
+              "stage": {
+                "top": 0,
+                "bottom": 900,
+                "left": 0,
+                "right": 1425,
+                "width": 1425,
+                "height": 900
+              },
+              "primary": {
+                "inert": true,
+                "ariaHidden": "true",
+                "pointerEvents": "none",
+                "opacity": 0,
+                "visibility": "hidden",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1425,
+                  "width": 1425,
+                  "height": 900
+                }
+              },
+              "secondary": {
+                "inert": false,
+                "ariaHidden": null,
+                "pointerEvents": "auto",
+                "opacity": 1,
+                "visibility": "visible",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1425,
+                  "width": 1425,
+                  "height": 900
+                }
+              },
+              "pressed": [
+                {
+                  "view": "0",
+                  "pressed": "false"
+                },
+                {
+                  "view": "1",
+                  "pressed": "true"
+                }
+              ],
+              "old": [
+                {
+                  "tag": "DIV",
+                  "class": "chapter-aside",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 827.40625,
+                    "left": 74.984375,
+                    "right": 489.65625,
+                    "width": 414.671875,
+                    "height": 731.359375
+                  }
+                },
+                {
+                  "tag": "DIV",
+                  "class": "investment-metrics",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 848.109375,
+                    "left": 509.625,
+                    "right": 1350.015625,
+                    "width": 840.390625,
+                    "height": 752.0625
+                  }
+                }
+              ],
+              "incoming": [
+                {
+                  "tag": "H3",
+                  "class": "",
+                  "opacity": 1,
+                  "visible": true,
+                  "rect": {
+                    "top": 304.46875,
+                    "bottom": 597.671875,
+                    "left": 476.9375,
+                    "right": 948.96875,
+                    "width": 472.03125,
+                    "height": 293.203125
+                  }
+                }
+              ]
+            },
+            {
+              "progress": 0.92,
+              "id": "investment",
+              "view": "1",
+              "scrollY": 14389,
+              "stage": {
+                "top": 0,
+                "bottom": 900,
+                "left": 0,
+                "right": 1425,
+                "width": 1425,
+                "height": 900
+              },
+              "primary": {
+                "inert": true,
+                "ariaHidden": "true",
+                "pointerEvents": "none",
+                "opacity": 0,
+                "visibility": "hidden",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1425,
+                  "width": 1425,
+                  "height": 900
+                }
+              },
+              "secondary": {
+                "inert": false,
+                "ariaHidden": null,
+                "pointerEvents": "auto",
+                "opacity": 1,
+                "visibility": "visible",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1425,
+                  "width": 1425,
+                  "height": 900
+                }
+              },
+              "pressed": [
+                {
+                  "view": "0",
+                  "pressed": "false"
+                },
+                {
+                  "view": "1",
+                  "pressed": "true"
+                }
+              ],
+              "old": [
+                {
+                  "tag": "DIV",
+                  "class": "chapter-aside",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 827.40625,
+                    "left": 74.984375,
+                    "right": 489.65625,
+                    "width": 414.671875,
+                    "height": 731.359375
+                  }
+                },
+                {
+                  "tag": "DIV",
+                  "class": "investment-metrics",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 848.109375,
+                    "left": 509.625,
+                    "right": 1350.015625,
+                    "width": 840.390625,
+                    "height": 752.0625
+                  }
+                }
+              ],
+              "incoming": [
+                {
+                  "tag": "H3",
+                  "class": "",
+                  "opacity": 1,
+                  "visible": true,
+                  "rect": {
+                    "top": 304.46875,
+                    "bottom": 597.671875,
+                    "left": 476.9375,
+                    "right": 948.96875,
+                    "width": 472.03125,
+                    "height": 293.203125
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "pageErrors": [],
+        "assetFailures": [],
+        "apiRequests": []
+      },
+      {
+        "engine": "webkit",
+        "pass": true,
+        "checks": [
+          "desktop normal-motion initialization",
+          "skip link moves keyboard focus into the main content",
+          "hero primary, opaque handoff and invitation foreground",
+          "about separated foregrounds and meaningful tower pan",
+          "primary CTA and nested keyboard dialog focus",
+          "direct location navigation and interactive secondary map",
+          "direct layouts navigation and keyboard residence details",
+          "short desktop natural flow and desktop restoration preserve layouts",
+          "investment title leads the collage without a blank handoff",
+          "investment collage visual snapshot",
+          "active RAF and long-task scroll diagnostics",
+          "contact navigation and live reduced-motion change preserve contact",
+          "touch 390x844 natural flow, overflow and accessible content",
+          "mobile navigation dialog keyboard focus and contact link",
+          "no browser errors, failed original assets or enquiry attempts"
+        ],
+        "investmentHandoff": {
+          "frames": 27,
+          "minCombinedForegroundOpacity": 0.0853,
+          "simultaneousForegroundFrames": 0,
+          "titleTravelPx": 0.0,
+          "settledSamples": [
+            {
+              "progress": 0.43,
+              "id": "investment",
+              "view": "1",
+              "scrollY": 13771,
+              "stage": {
+                "top": 0,
+                "bottom": 900,
+                "left": 0,
+                "right": 1440,
+                "width": 1440,
+                "height": 900
+              },
+              "primary": {
+                "inert": true,
+                "ariaHidden": "true",
+                "pointerEvents": "none",
+                "opacity": 0,
+                "visibility": "hidden",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1440,
+                  "width": 1440,
+                  "height": 900
+                }
+              },
+              "secondary": {
+                "inert": false,
+                "ariaHidden": null,
+                "pointerEvents": "auto",
+                "opacity": 1,
+                "visibility": "visible",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1440,
+                  "width": 1440,
+                  "height": 900
+                }
+              },
+              "pressed": [
+                {
+                  "view": "0",
+                  "pressed": "false"
+                },
+                {
+                  "view": "1",
+                  "pressed": "true"
+                }
+              ],
+              "old": [
+                {
+                  "tag": "DIV",
+                  "class": "chapter-aside",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 827.40625,
+                    "left": 74.984375,
+                    "right": 494.015625,
+                    "width": 419.03125,
+                    "height": 731.359375
+                  }
+                },
+                {
+                  "tag": "DIV",
+                  "class": "investment-metrics",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 848.109375,
+                    "left": 515,
+                    "right": 1365.015625,
+                    "width": 850.015625,
+                    "height": 752.0625
+                  }
+                }
+              ],
+              "incoming": [
+                {
+                  "tag": "H3",
+                  "class": "",
+                  "opacity": 1,
+                  "visible": true,
+                  "rect": {
+                    "top": 304.46875,
+                    "bottom": 594.46875,
+                    "left": 481.953125,
+                    "right": 958.953125,
+                    "width": 477,
+                    "height": 290
+                  }
+                }
+              ]
+            },
+            {
+              "progress": 0.92,
+              "id": "investment",
+              "view": "1",
+              "scrollY": 14389,
+              "stage": {
+                "top": 0,
+                "bottom": 900,
+                "left": 0,
+                "right": 1440,
+                "width": 1440,
+                "height": 900
+              },
+              "primary": {
+                "inert": true,
+                "ariaHidden": "true",
+                "pointerEvents": "none",
+                "opacity": 0,
+                "visibility": "hidden",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1440,
+                  "width": 1440,
+                  "height": 900
+                }
+              },
+              "secondary": {
+                "inert": false,
+                "ariaHidden": null,
+                "pointerEvents": "auto",
+                "opacity": 1,
+                "visibility": "visible",
+                "rect": {
+                  "top": 0,
+                  "bottom": 900,
+                  "left": 0,
+                  "right": 1440,
+                  "width": 1440,
+                  "height": 900
+                }
+              },
+              "pressed": [
+                {
+                  "view": "0",
+                  "pressed": "false"
+                },
+                {
+                  "view": "1",
+                  "pressed": "true"
+                }
+              ],
+              "old": [
+                {
+                  "tag": "DIV",
+                  "class": "chapter-aside",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 827.40625,
+                    "left": 74.984375,
+                    "right": 494.015625,
+                    "width": 419.03125,
+                    "height": 731.359375
+                  }
+                },
+                {
+                  "tag": "DIV",
+                  "class": "investment-metrics",
+                  "opacity": 0,
+                  "visible": false,
+                  "rect": {
+                    "top": 96.046875,
+                    "bottom": 848.109375,
+                    "left": 515,
+                    "right": 1365.015625,
+                    "width": 850.015625,
+                    "height": 752.0625
+                  }
+                }
+              ],
+              "incoming": [
+                {
+                  "tag": "H3",
+                  "class": "",
+                  "opacity": 1,
+                  "visible": true,
+                  "rect": {
+                    "top": 304.46875,
+                    "bottom": 594.46875,
+                    "left": 481.953125,
+                    "right": 958.953125,
+                    "width": 477,
+                    "height": 290
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "pageErrors": [],
+        "assetFailures": [],
+        "apiRequests": []
+      }
+    ]
+  },
+  "nativeClose": {
+    "pass": true,
+    "profiles": [
+      {
+        "engine": "chromium",
+        "width": 320,
+        "height": 740,
+        "isMobile": true,
+        "scrollInput": "native mouse wheel",
+        "closeInput": "touch tap",
+        "cases": [
+          {
+            "name": "menu",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [],
+              "bodyLocked": false,
+              "htmlLocked": false
+            },
+            "errors": []
+          },
+          {
+            "name": "enquiry",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "privacy",
+            "pass": true,
+            "beforeClose": {
+              "top": 66.703125,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 84.703125,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 66.703125,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 84.703125,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "terms",
+            "pass": true,
+            "beforeClose": {
+              "top": 71.90625,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 89.90625,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 71.90625,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 89.90625,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          }
+        ],
+        "reopen": {
+          "scrollTop": 0,
+          "firstName": "Visual audit"
+        }
+      },
+      {
+        "engine": "chromium",
+        "width": 844,
+        "height": 390,
+        "isMobile": true,
+        "scrollInput": "native mouse wheel",
+        "closeInput": "touch tap",
+        "cases": [
+          {
+            "name": "menu",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [],
+              "bodyLocked": false,
+              "htmlLocked": false
+            },
+            "errors": []
+          },
+          {
+            "name": "enquiry",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "privacy",
+            "pass": true,
+            "beforeClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "terms",
+            "pass": true,
+            "beforeClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          }
+        ],
+        "reopen": {
+          "scrollTop": 0,
+          "firstName": "Visual audit"
+        }
+      },
+      {
+        "engine": "webkit",
+        "width": 320,
+        "height": 740,
+        "isMobile": false,
+        "scrollInput": "native mouse wheel",
+        "closeInput": "mouse click",
+        "cases": [
+          {
+            "name": "menu",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [],
+              "bodyLocked": false,
+              "htmlLocked": false
+            },
+            "errors": []
+          },
+          {
+            "name": "enquiry",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 256,
+              "width": 46,
+              "height": 46,
+              "x": 279,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "privacy",
+            "pass": true,
+            "beforeClose": {
+              "top": 83.5,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 101.5,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 83.5,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 101.5,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "terms",
+            "pass": true,
+            "beforeClose": {
+              "top": 88.5,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 106.5,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 88.5,
+              "left": 249,
+              "width": 36,
+              "height": 36,
+              "x": 267,
+              "y": 106.5,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          }
+        ],
+        "reopen": {
+          "scrollTop": 0,
+          "firstName": "Visual audit"
+        }
+      },
+      {
+        "engine": "webkit",
+        "width": 844,
+        "height": 390,
+        "isMobile": false,
+        "scrollInput": "native mouse wheel",
+        "closeInput": "mouse click",
+        "cases": [
+          {
+            "name": "menu",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [],
+              "bodyLocked": false,
+              "htmlLocked": false
+            },
+            "errors": []
+          },
+          {
+            "name": "enquiry",
+            "pass": true,
+            "beforeClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 18,
+              "left": 780,
+              "width": 46,
+              "height": 46,
+              "x": 803,
+              "y": 41,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "privacy",
+            "pass": true,
+            "beforeClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          },
+          {
+            "name": "terms",
+            "pass": true,
+            "beforeClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "afterScrollClose": {
+              "top": 35,
+              "left": 694,
+              "width": 36,
+              "height": 36,
+              "x": 712,
+              "y": 53,
+              "hit": true,
+              "fullyVisible": true
+            },
+            "nativeClose": true,
+            "afterClose": {
+              "openDialogs": [
+                "menu-dialog",
+                "enquiry-dialog"
+              ],
+              "bodyLocked": true,
+              "htmlLocked": true
+            },
+            "errors": []
+          }
+        ],
+        "reopen": {
+          "scrollTop": 0,
+          "firstName": "Visual audit"
+        }
+      }
+    ],
+    "pageErrors": [],
+    "blockedRequests": []
+  },
+  "galleryFailure": {
+    "pass": true,
+    "engines": [
+      {
+        "engine": "chromium",
+        "pass": true,
+        "states": [
+          {
+            "label": "initial",
+            "current": "1",
+            "image": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "scrollY": 9940
+          },
+          {
+            "label": "failed-second",
+            "current": "1",
+            "image": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "scrollY": 9940
+          },
+          {
+            "label": "next-reaches-third",
+            "current": "3",
+            "image": {
+              "loaded": true,
+              "alt": "Private terrace and pool framed by palms",
+              "src": "http://127.0.0.1:14326/assets/1-921-imgImage6.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Open living and dining spaces in warm natural materials",
+              "src": "http://127.0.0.1:14326/assets/1-821-imgRectangle151.webp"
+            },
+            "scrollY": 9940
+          },
+          {
+            "label": "previous-retries-second",
+            "current": "2",
+            "image": {
+              "loaded": true,
+              "alt": "Residence terrace overlooking the golf course and Dubai skyline",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle130.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Private terrace and pool framed by palms",
+              "src": "http://127.0.0.1:14326/assets/1-921-imgImage6.webp"
+            },
+            "scrollY": 9940
+          }
+        ],
+        "errors": []
+      },
+      {
+        "engine": "webkit",
+        "pass": true,
+        "states": [
+          {
+            "label": "initial",
+            "current": "1",
+            "image": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "scrollY": 9939
+          },
+          {
+            "label": "failed-second",
+            "current": "1",
+            "image": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Double-height living room overlooking Dubai Marina",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle129.webp"
+            },
+            "scrollY": 9939
+          },
+          {
+            "label": "next-reaches-third",
+            "current": "3",
+            "image": {
+              "loaded": true,
+              "alt": "Private terrace and pool framed by palms",
+              "src": "http://127.0.0.1:14326/assets/1-921-imgImage6.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Open living and dining spaces in warm natural materials",
+              "src": "http://127.0.0.1:14326/assets/1-821-imgRectangle151.webp"
+            },
+            "scrollY": 9939
+          },
+          {
+            "label": "previous-retries-second",
+            "current": "2",
+            "image": {
+              "loaded": true,
+              "alt": "Residence terrace overlooking the golf course and Dubai skyline",
+              "src": "http://127.0.0.1:14326/assets/1-900-imgRectangle130.webp"
+            },
+            "preview": {
+              "loaded": true,
+              "alt": "Private terrace and pool framed by palms",
+              "src": "http://127.0.0.1:14326/assets/1-921-imgImage6.webp"
+            },
+            "scrollY": 9939
+          }
+        ],
+        "errors": []
+      }
+    ]
+  },
+  "browser": {
+    "project": "six-senses",
+    "startedAt": "2026-11-01T15:54:49.278Z",
+    "widths": [
+      {
+        "viewport": 1440,
+        "scroll": 1425,
+        "body": 1425,
+        "chapters": 8,
+        "h1": 1,
+        "broken": [],
+        "metricOverflow": []
+      },
+      {
+        "viewport": 768,
+        "scroll": 753,
+        "body": 753,
+        "chapters": 8,
+        "h1": 1,
+        "broken": [],
+        "metricOverflow": []
+      },
+      {
+        "viewport": 390,
+        "scroll": 375,
+        "body": 375,
+        "chapters": 8,
+        "h1": 1,
+        "broken": [],
+        "metricOverflow": []
+      },
+      {
+        "viewport": 320,
+        "scroll": 305,
+        "body": 305,
+        "chapters": 8,
+        "h1": 1,
+        "broken": [],
+        "metricOverflow": []
+      }
+    ],
+    "checks": [
+      "HTTP 200; eight chapters; one h1; all original images load; no horizontal or metric-text overflow at 1440/768/390/320; reduced-motion view controls work",
+      "Mobile menu opens, navigates to layouts, closes with Escape and restores focus",
+      "Triplex and Duplex detail controls preserve original areas; nested plan zoom/pan/reset/Escape restore focus",
+      "Four-image gallery advances with arrows/keyboard; gallery and map open original images and restore focus",
+      "Contextual modal validates all required fields without sending, supports native country/other-country inputs and nested privacy focus",
+      "Network failure, close/reopen, pending reopen and duplicate-submit guard retain fields and UUID; 503 and ok:false never show success",
+      "Edited payload creates a fresh UUID; 422 fields are displayed; unchanged retry keeps that UUID; only confirmed ok:true/id shows success",
+      "Reopening after confirmed success starts a clean enquiry with a new UUID",
+      "Inline contact form validates independently; footer privacy opens and restores focus",
+      "Motion-enabled desktop creates seven sticky stories; navigation reveals functional layout state and its details open"
+    ],
+    "pageErrors": [],
+    "assetFailures": [],
+    "mockedRequests": [
+      {
+        "project": "six-senses",
+        "context": "Unit 01 | Triplex A",
+        "submissionId": "eee3dcd3-53a3-4fe9-8ee1-a99bb4c6ce54",
+        "startedAt": 1793548498854,
+        "consent": true
+      },
+      {
+        "project": "six-senses",
+        "context": "Unit 01 | Triplex A",
+        "submissionId": "eee3dcd3-53a3-4fe9-8ee1-a99bb4c6ce54",
+        "startedAt": 1793548498854,
+        "consent": true
+      },
+      {
+        "project": "six-senses",
+        "context": "Unit 01 | Triplex A",
+        "submissionId": "eee3dcd3-53a3-4fe9-8ee1-a99bb4c6ce54",
+        "startedAt": 1793548498854,
+        "consent": true
+      },
+      {
+        "project": "six-senses",
+        "context": "Unit 01 | Triplex A",
+        "submissionId": "c1493199-3c32-4d0a-9a30-548d4d25b079",
+        "startedAt": 1793548498854,
+        "consent": true
+      },
+      {
+        "project": "six-senses",
+        "context": "Unit 01 | Triplex A",
+        "submissionId": "c1493199-3c32-4d0a-9a30-548d4d25b079",
+        "startedAt": 1793548498854,
+        "consent": true
+      },
+      {
+        "project": "six-senses",
+        "context": "Unit 01 | Triplex A",
+        "submissionId": "9d2d2da0-c4bc-4238-9092-94cb65534993",
+        "startedAt": 1793548500789,
+        "consent": true
+      }
+    ],
+    "ok": true,
+    "finishedAt": "2026-11-01T15:55:05.935Z"
+  },
+  "sourceIconScan": {
+    "scope": "HTML-entity-decoded Astro, TypeScript, CSS and SVG under src, plus every public SVG asset",
+    "filesScanned": 44,
+    "matches": []
+  },
+  "executionSessions": {
+    "finalMotion": 14822,
+    "finalInteractionsVisualBrowser": 73205,
+    "focusedContinuity": 84128,
+    "failedGalleryRecovery": 25570
+  },
+  "review": {
+    "allFinalContactSheets": "Inspected, with full-resolution selected and suspected views opened separately.",
+    "independentReview": "A second reviewer inspected all 51 Chromium desktop section/state/navigation frames and all 47 desktop interaction frames; no new material visual defects identified."
+  },
+  "limits": [
+    "Headless Linux rendering and interaction evidence, not physical-device FPS or Safari browser-chrome behavior.",
+    "Original images were eagerly decoded for section visibility; this is not a network-performance score.",
+    "Native wheel is unsupported in mobile WebKit; close QA used a desktop WebKit context at the same narrow widths. Mobile WebKit rendering was separately captured.",
+    "Enquiry operations were mocked or blocked; no real enquiry was sent."
+  ],
+  "screenshots": {
+    "close-landscape-844.png": {
+      "sha256": "bb9e213b1388c4e2b3452bc7cadd8e13dd516184342e628b3f4bcbb09364706d"
+    },
+    "enquiry-mobile-390.png": {
+      "sha256": "dcbb66361468b3fb9f6ae05dd02fa75b6b05a012ee9ecb14bdc86014f81b7cae"
+    },
+    "gallery-mobile-390.png": {
+      "sha256": "d2ff0c079e032ede28661a3840f2890bc6328e98171b4c2247a34ce11c84046d"
+    },
+    "hero-desktop-1440.jpg": {
+      "sha256": "8197365a3048d078450a0cefa2dac370d8ac4e894a6b5947dace6633e84a3d2b"
+    },
+    "investment-title-043.png": {
+      "sha256": "bdf39b5dd2ea295c1b98f0fd7ec64523018eefbd1abba18a8dda3d6003bc9225"
+    },
+    "residence-mobile-390.png": {
+      "sha256": "9b0a6fb189efff618ec2d901259f19a30c3f20bcc8d8f4bfc856bdeaa6637400"
+    }
+  }
+}
