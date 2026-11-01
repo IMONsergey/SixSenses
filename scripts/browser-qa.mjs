@@ -56,6 +56,24 @@ async function settle(page){
 async function dialogOpen(page,id,open=true){
  await page.waitForFunction(({id,open})=>document.getElementById(id)?.open===open,{id,open});
 }
+async function zoomReady(page){
+ await page.waitForFunction(()=>{const image=document.querySelector('[data-zoom-image]');return document.querySelector('#zoom-dialog')?.open&&!document.querySelector('.zoom-stage')?.hasAttribute('aria-busy')&&!image?.hidden&&image?.complete&&image.naturalWidth>0;});
+}
+async function galleryCount(page,value){await page.waitForFunction(value=>document.querySelector('[data-gallery-current]')?.textContent?.trim()===value,value);}
+async function zoomGeometry(page){
+ return page.evaluate(()=>{
+  const stage=document.querySelector('.zoom-stage').getBoundingClientRect(),image=document.querySelector('[data-zoom-image]'),box=image.getBoundingClientRect();
+  const ratio=Math.min(box.width/image.naturalWidth,box.height/image.naturalHeight),width=image.naturalWidth*ratio,height=image.naturalHeight*ratio;
+  const left=box.left+(box.width-width)/2,top=box.top+(box.height-height)/2;
+  return{stage:{left:stage.left,right:stage.right,top:stage.top,bottom:stage.bottom,width:stage.width,height:stage.height},image:{left,right:left+width,top,bottom:top+height,width,height}};
+ });
+}
+function assertPanBounds(box){
+ for(const[first,last,size]of [['left','right','width'],['top','bottom','height']]){
+  if(box.image[size]>=box.stage[size]-1)assert.ok(box.image[first]<=box.stage[first]+1&&box.image[last]>=box.stage[last]-1,`Pan exposes empty stage: ${JSON.stringify(box)}`);
+  else assert.ok(Math.abs((box.image[first]+box.image[last]-box.stage[first]-box.stage[last])/2)<=1,`Smaller image lost its centered fit: ${JSON.stringify(box)}`);
+ }
+}
 async function focused(locator){
  await locator.page().waitForFunction(selector=>document.querySelector(selector)===document.activeElement,await locator.evaluate(element=>{
   if(!element.id)element.id=`qa-focus-${Math.random().toString(36).slice(2)}`;
@@ -120,11 +138,19 @@ try{
  assert.match(await page.locator('[data-unit-panel="duplex"]').innerText(),/935\.02/);
  assert.equal(await page.locator('#unit-dialog .unit-nav [data-unit="duplex"]').getAttribute('aria-pressed'),'true');
  const planZoom=page.locator('[data-plan-zoom="duplex"]');
- await planZoom.click();await dialogOpen(page,'zoom-dialog');
- await page.locator('[data-zoom-in]').click();assert.equal(await page.locator('[data-zoom-reset]').innerText(),'150%');
+ await planZoom.click();await dialogOpen(page,'zoom-dialog');await zoomReady(page);
+ await page.locator('[data-zoom-in]').click();await page.waitForFunction(()=>document.querySelector('[data-zoom-reset]')?.textContent==='150%');
+ const beforePan=await zoomGeometry(page);assertPanBounds(beforePan);
  await page.locator('.zoom-stage').focus();await page.keyboard.press('ArrowRight');
- assert.match(await page.locator('.zoom-canvas').getAttribute('style'),/translate\(40px/);
- await page.locator('[data-zoom-reset]').click();assert.match(await page.locator('[data-zoom-reset]').innerText(),/^Fit$/i);
+ if(beforePan.image.width>beforePan.stage.width+2){
+  await page.waitForFunction(previous=>{const image=document.querySelector('[data-zoom-image]'),box=image.getBoundingClientRect(),ratio=Math.min(box.width/image.naturalWidth,box.height/image.naturalHeight);return box.left+(box.width-image.naturalWidth*ratio)/2<previous-1;},beforePan.image.left);
+ }
+ assertPanBounds(await zoomGeometry(page));
+ for(let i=0;i<8;i++)await page.keyboard.press('ArrowRight');
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
+ const edge=await zoomGeometry(page);assertPanBounds(edge);
+ if(edge.image.width>edge.stage.width+2)assert.ok(Math.abs(edge.image.right-edge.stage.right)<=2,'Panning toward the right stops at the image edge');
+ await page.locator('[data-zoom-reset]').click();await page.waitForFunction(()=>document.querySelector('[data-zoom-reset]')?.textContent==='Fit');assertPanBounds(await zoomGeometry(page));
  await page.keyboard.press('Escape');await dialogOpen(page,'zoom-dialog',false);await focused(planZoom);
  await page.keyboard.press('Escape');await dialogOpen(page,'unit-dialog',false);await focused(triplexButton);
  check('Triplex and Duplex detail controls preserve original areas; nested plan zoom/pan/reset/Escape restore focus');
@@ -132,11 +158,11 @@ try{
  const gallery=page.locator('.gallery');
  assert.equal(await page.locator('[data-gallery-current]').innerText(),'1');
  const firstImage=await page.locator('[data-gallery-image]').getAttribute('src');
- await page.locator('.gallery__controls [data-gallery-next]').click();assert.equal(await page.locator('[data-gallery-current]').innerText(),'2');
+ await page.locator('.gallery__controls [data-gallery-next]').click();await galleryCount(page,'2');assert.equal(await page.locator('[data-gallery-current]').innerText(),'2');
  assert.notEqual(await page.locator('[data-gallery-image]').getAttribute('src'),firstImage);
- await gallery.focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('[data-gallery-current]').innerText(),'3');
- await page.keyboard.press('ArrowLeft');assert.equal(await page.locator('[data-gallery-current]').innerText(),'2');
- const galleryZoom=page.locator('[data-gallery-zoom]');await galleryZoom.click();await dialogOpen(page,'zoom-dialog');
+ await gallery.focus();await page.keyboard.press('ArrowRight');await galleryCount(page,'3');assert.equal(await page.locator('[data-gallery-current]').innerText(),'3');
+ await page.keyboard.press('ArrowLeft');await galleryCount(page,'2');assert.equal(await page.locator('[data-gallery-current]').innerText(),'2');
+ const galleryZoom=page.locator('[data-gallery-zoom]');await galleryZoom.click();await dialogOpen(page,'zoom-dialog');await zoomReady(page);
  assert.equal(await page.locator('[data-zoom-image]').getAttribute('src'),await page.locator('[data-gallery-image]').getAttribute('src'));
  await page.keyboard.press('Escape');await dialogOpen(page,'zoom-dialog',false);await focused(galleryZoom);
  const mapButton=page.locator('[data-location-zoom]');await mapButton.click();await dialogOpen(page,'zoom-dialog');

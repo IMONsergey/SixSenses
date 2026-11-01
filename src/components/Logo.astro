@@ -1,9 +1,11 @@
 ---
+import ResponsiveImage from './ResponsiveImage.astro';
+import { imageSizes } from '../data/image-sizes';
 import { asset } from '../data/assets';
 interface Props { class?: string; decorative?: boolean }
 const {class:className='', decorative=false}=Astro.props;
 ---
 <div class:list={['six-logo',className]} role={decorative?undefined:'img'} aria-label={decorative?undefined:'Six Senses Residences, Dubai Marina'} aria-hidden={decorative?'true':undefined}>
   <img class="six-logo__symbol" src={asset('1:350','imgRectangle95')} alt="" width="122" height="54" />
-  <span class="six-logo__wordmark"><img src={asset('1:350','imgSsrDubaiMarinaStandardLogoWhite1')} alt="" width="3021" height="2551" /></span>
+  <span class="six-logo__wordmark"><ResponsiveImage src={asset('1:350','imgSsrDubaiMarinaStandardLogoWhite1')} alt="" width="3021" height="2551" sizes={imageSizes.logo} /></span>
 </div>

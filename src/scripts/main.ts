@@ -1,5 +1,6 @@
 import {gsap} from 'gsap';
 import {ScrollTrigger} from 'gsap/ScrollTrigger';
+import {initializeMediaInteractions} from './media-interactions';
 
 type Unit={id:string;name:string;plan:string;bedrooms:number;levels:string};
 type GalleryItem={image:string;alt:string};
@@ -7,38 +8,18 @@ const config:{units:Unit[];gallery:GalleryItem[]}=JSON.parse(document.querySelec
 const $=<T extends Element=HTMLElement>(selector:string,root:ParentNode=document)=>root.querySelector<T>(selector)!;
 const $$=<T extends Element=HTMLElement>(selector:string,root:ParentNode=document)=>[...root.querySelectorAll<T>(selector)];
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const desktop=matchMedia('(min-width:1101px)');
+const desktop=matchMedia('(min-width:1101px) and (min-height:760px) and (pointer:fine)');
 const priorFocus=new WeakMap<HTMLDialogElement,HTMLElement>();
-function openDialog(id:string){const dialog=document.getElementById(id) as HTMLDialogElement|null;if(!dialog||dialog.open)return;priorFocus.set(dialog,document.activeElement as HTMLElement);dialog.showModal();document.body.classList.add('modal-open');if(id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','true');}
+const dialogStack:HTMLDialogElement[]=[];
+let dialogClickOrigin:HTMLElement|undefined;
+function openDialog(id:string){const dialog=document.getElementById(id) as HTMLDialogElement|null;if(!dialog||dialog.open)return;priorFocus.set(dialog,dialogClickOrigin||document.activeElement as HTMLElement);dialog.showModal();dialogStack.push(dialog);document.documentElement.classList.add('modal-open');document.body.classList.add('modal-open');if(id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','true');}
 $$<HTMLDialogElement>('dialog').forEach(dialog=>{
- dialog.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.classList.remove('modal-open');if(dialog.id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','false');const target=priorFocus.get(dialog);if(target?.isConnected&&!target.closest('dialog:not([open])'))target.focus({preventScroll:true});if(dialog.id==='unit-dialog'){const url=new URL(location.href);url.searchParams.delete('unit');history.replaceState({},'',url);}});
+ dialog.addEventListener('close',()=>{const index=dialogStack.indexOf(dialog);if(index!==-1)dialogStack.splice(index,1);if(!document.querySelector('dialog[open]')){document.body.classList.remove('modal-open');document.documentElement.classList.remove('modal-open');}if(dialog.id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','false');const target=priorFocus.get(dialog),remaining=dialogStack.filter(item=>item.open).at(-1);if(target?.isConnected&&target.getClientRects().length&&!target.closest('dialog:not([open]),[inert]')&&(!remaining||target.closest('dialog')===remaining))target.focus({preventScroll:true});if(dialog.id==='unit-dialog'){const url=new URL(location.href);url.searchParams.delete('unit');history.replaceState({},'',url);}});
  dialog.addEventListener('click',event=>{if(!dialog.classList.contains('small-sheet')||event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close();});
 });
 function showUnit(id:string){const unit=config.units.find(u=>u.id===id);if(!unit)return;$$('[data-unit-panel]').forEach(p=>p.hidden=p.dataset.unitPanel!==id);$('#unit-title').textContent=unit.name;$$('#unit-dialog [data-unit]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.unit===id)));openDialog('unit-dialog');$('#unit-dialog').scrollTo({top:0,behavior:'instant'});const url=new URL(location.href);url.searchParams.set('unit',id);history.replaceState({},'',url);}
 
-let galleryIndex=0;
-function showGallery(index:number){galleryIndex=(index+config.gallery.length)%config.gallery.length;const current=config.gallery[galleryIndex],next=config.gallery[(galleryIndex+1)%config.gallery.length];const image=$<HTMLImageElement>('[data-gallery-image]'),preview=$<HTMLImageElement>('[data-gallery-preview]');image.src=current.image;image.alt=current.alt;preview.src=next.image;preview.alt=next.alt;$('[data-gallery-current]').textContent=String(galleryIndex+1);}
-$('.gallery').addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();showGallery(galleryIndex+(event.key==='ArrowRight'?1:-1));}});
-let swipe:{x:number;y:number}|null=null,suppressGalleryClick=false;
-$('.gallery__main').addEventListener('pointerdown',event=>{swipe={x:event.clientX,y:event.clientY};});
-$('.gallery__main').addEventListener('pointerup',event=>{if(!swipe)return;const dx=event.clientX-swipe.x,dy=event.clientY-swipe.y;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){showGallery(galleryIndex+(dx<0?1:-1));suppressGalleryClick=true;event.preventDefault();}swipe=null;});
-$('.gallery__main').addEventListener('pointercancel',()=>{swipe=null;});
-const cardRail=$('.layout-cards');cardRail.tabIndex=0;
-function layoutIndex(){const cards=$$<HTMLElement>('.layout-card',cardRail);return Math.abs(cards[0].getBoundingClientRect().left-24)<Math.abs(cards[1].getBoundingClientRect().left-24)?0:1;}
-function scrollLayout(delta:number){const cards=$$<HTMLElement>('.layout-card',cardRail),index=Math.max(0,Math.min(cards.length-1,layoutIndex()+delta));cardRail.scrollTo({left:cards[index].offsetLeft-24,behavior:reduced.matches?'instant':'smooth'});}
-cardRail.addEventListener('scroll',()=>{$('[data-layout-count]').textContent=`${layoutIndex()+1} / 2`;},{passive:true});
-cardRail.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();scrollLayout(event.key==='ArrowRight'?1:-1);}});
-
-const zoomStage=$('.zoom-stage'),zoomCanvas=$('.zoom-canvas');let zoom=1,panX=0,panY=0;
-const pointers=new Map<number,{x:number;y:number}>();let drag={x:0,y:0,panX:0,panY:0},pinch={distance:0,zoom:1};
-function updateZoom(){zoom=Math.max(1,Math.min(5,zoom));const x=zoomStage.clientWidth*(zoom-1)/2,y=zoomStage.clientHeight*(zoom-1)/2;panX=Math.max(-x,Math.min(x,panX));panY=Math.max(-y,Math.min(y,panY));zoomCanvas.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;$('[data-zoom-reset]').textContent=zoom===1?'Fit':`${Math.round(zoom*100)}%`;}
-function resetZoom(){zoom=1;panX=0;panY=0;pointers.clear();updateZoom();}
-function openZoom(src:string,alt:string,title:string,plan=false){const image=$<HTMLImageElement>('[data-zoom-image]');image.src=src;image.alt=alt;$('#zoom-title').textContent=title;$('#zoom-dialog').classList.toggle('is-plan',plan);openDialog('zoom-dialog');resetZoom();}
-zoomStage.addEventListener('pointerdown',event=>{zoomStage.setPointerCapture(event.pointerId);pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});drag={x:event.clientX,y:event.clientY,panX,panY};if(pointers.size===2){const[a,b]=[...pointers.values()];pinch={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom};}zoomStage.classList.add('is-dragging');});
-zoomStage.addEventListener('pointermove',event=>{if(!pointers.has(event.pointerId))return;pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});if(pointers.size===2){const[a,b]=[...pointers.values()];zoom=pinch.zoom*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,pinch.distance);}else{panX=drag.panX+event.clientX-drag.x;panY=drag.panY+event.clientY-drag.y;}updateZoom();});
-const endPointer=(event:PointerEvent)=>{pointers.delete(event.pointerId);if(!pointers.size)zoomStage.classList.remove('is-dragging');};zoomStage.addEventListener('pointerup',endPointer);zoomStage.addEventListener('pointercancel',endPointer);
-zoomStage.addEventListener('wheel',event=>{event.preventDefault();zoom+=event.deltaY<0?.15:-.15;updateZoom();},{passive:false});
-zoomStage.addEventListener('keydown',event=>{if(!['+','=','-','0','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();if(event.key==='+'||event.key==='=')zoom+=.5;else if(event.key==='-')zoom-=.5;else if(event.key==='0'){resetZoom();return;}else if(event.key==='ArrowLeft')panX-=40;else if(event.key==='ArrowRight')panX+=40;else if(event.key==='ArrowUp')panY-=40;else if(event.key==='ArrowDown')panY+=40;updateZoom();});
+const {stepGallery,openGallery,openZoom,changeZoom,resetZoom,scrollLayout}=initializeMediaInteractions({...config,openDialog},reduced);
 
 // Both enquiry forms share the real endpoint and retain the same idempotency key on a retry.
 type FormState={startedAt:number;submissionId:string;context:string;pending:boolean;touched:boolean;fingerprint:string;completed:boolean};
@@ -91,50 +72,178 @@ $$<HTMLFormElement>('[data-enquiry-form]').forEach(form=>{
  });
 });
 
-// Scroll storytelling keeps the alternative Figma scenes inside their eight chapters.
-const header=$('.site-header');let headerPending=false;
+// Scroll scenes use an opaque image handoff, followed by their foreground.
+// The Dprofile sequence reveals the invitation after the new architecture is in place.
+const header=$('.site-header');
+let headerPending=false;
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ignoreMobileResize:true});
 const chapters=$$<HTMLElement>('[data-story]');
-function setView(chapter:HTMLElement,view:number){chapter.dataset.view=String(view);$$<HTMLButtonElement>('[data-story-switch]',chapter).forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.storySwitch)===view)));if(desktop.matches){$('.state-primary',chapter).inert=view===1;$('.state-secondary',chapter).inert=view===0;}else{$('.state-primary',chapter).inert=false;$('.state-secondary',chapter).inert=false;}}
+const chapterParts=new Map(chapters.map(chapter=>[chapter,{
+ primary:$('.state-primary',chapter),secondary:$('.state-secondary',chapter),
+ buttons:$$<HTMLButtonElement>('[data-story-switch]',chapter)
+}]));
+const sections=$$<HTMLElement>('main>section');
+const navLinks=$$<HTMLAnchorElement>('.desktop-nav a');
+const readingProgress=$('.reading-progress');
+let currentChapter='home',currentStoryView=0,modeRestoreFrame=0,motionInitialized=false;
+function setView(chapter:HTMLElement,view:number){
+ const parts=chapterParts.get(chapter)!;
+ if(chapter.dataset.view!==String(view))chapter.dataset.view=String(view);
+ parts.buttons.forEach(button=>{const value=String(Number(button.dataset.storySwitch)===view);if(button.getAttribute('aria-pressed')!==value)button.setAttribute('aria-pressed',value);});
+ for(const [index,state] of [parts.primary,parts.secondary].entries()){
+  const inactive=desktop.matches&&index!==view;
+  if(state.inert!==inactive)state.inert=inactive;
+  if(inactive){if(state.getAttribute('aria-hidden')!=='true')state.setAttribute('aria-hidden','true');}else if(state.hasAttribute('aria-hidden'))state.removeAttribute('aria-hidden');
+ }
+}
 chapters.forEach(chapter=>setView(chapter,Number(chapter.dataset.baseView)||0));
 const stories=new Map<HTMLElement,ScrollTrigger>();
 const media=gsap.matchMedia();
-media.add('(min-width:1101px) and (prefers-reduced-motion:no-preference)',()=>{
+const foregrounds:Record<string,[string,string]>={
+ home:['h1,.hero-metrics','.invitation-card'],
+ about:['.about__heading,.about__copy,.scene-action','h3,.architecture-copy'],
+ location:['.entry-title','.location-copy,.map-zoom'],
+ layouts:['.entry-title','.chapter-aside,.layout-cards,.layout-controls'],
+ interiors:['.entry-title','.chapter-aside,.gallery'],
+ infrastructure:['.chapter-aside,.wellbeing-cards','h3'],
+ investment:['.chapter-aside,.investment-metrics','h3']
+};
+media.add('(min-width:1101px) and (min-height:760px) and (pointer:fine) and (prefers-reduced-motion:no-preference)',()=>{
+ const restoreTarget=sections.find(section=>section.id===currentChapter);
+ const restoreView=currentStoryView,restoreScroll=motionInitialized&&scrollY>0;
+ cancelAnimationFrame(modeRestoreFrame);
  chapters.forEach(chapter=>{
-  chapter.classList.add('is-story');chapter.style.height=`${Number(chapter.dataset.duration)*innerHeight}px`;const primary=$('.state-primary',chapter),secondary=$('.state-secondary',chapter);
-  gsap.set(primary,{autoAlpha:1,y:0});gsap.set(secondary,{autoAlpha:0,y:48});setView(chapter,0);
-  const timeline=gsap.timeline({scrollTrigger:{trigger:chapter,start:'top top',end:'bottom bottom',scrub:.65,invalidateOnRefresh:true,onRefresh:()=>{chapter.style.height=`${Number(chapter.dataset.duration)*innerHeight}px`;},onUpdate:self=>{const view=self.progress>.42?1:0;setView(chapter,view);primary.style.pointerEvents=view===0?'auto':'none';secondary.style.pointerEvents=view===1?'auto':'none';scheduleHeader();}}});
-  timeline.to({}, {duration:.2}).to(primary,{autoAlpha:0,y:-35,duration:.28,ease:'none'},.2).to(secondary,{autoAlpha:1,y:0,duration:.28,ease:'none'},.2).to({}, {duration:.52},.48);
-  if(chapter.id==='home')timeline.fromTo('.hero__photo',{scale:1},{scale:1.09,duration:.48,ease:'none'},0);
-  if(chapter.id==='about')timeline.fromTo('.architecture-photo',{yPercent:0},{yPercent:-6,duration:.52,ease:'none'},.48);
-  if(chapter.id==='investment')timeline.fromTo('.investment-collage',{y:25},{y:-25,duration:.52,ease:'none'},.48);
-  if(chapter.id==='infrastructure')timeline.fromTo('.wellbeing__closing>div',{y:30},{y:0,duration:.52,ease:'none'},.48);
+  const {primary,secondary}=chapterParts.get(chapter)!;
+  const [outSelector,inSelector]=foregrounds[chapter.id];
+  const outgoing=$$(outSelector,primary),incoming=$$(inSelector,secondary);
+  chapter.style.setProperty('--story-duration',chapter.dataset.duration||'2.4');
+  chapter.classList.add('is-story');
+  gsap.set(primary,{autoAlpha:1});
+  gsap.set(secondary,{autoAlpha:1,yPercent:100});
+  gsap.set(incoming,{autoAlpha:0,y:28});
+  setView(chapter,0);
+  const timeline=gsap.timeline({
+   defaults:{ease:'none'},
+   onUpdate:()=>{setView(chapter,timeline.progress()>=.54?1:0);scheduleHeader();},
+   scrollTrigger:{trigger:chapter,start:'top top',end:'bottom bottom',scrub:.35,invalidateOnRefresh:true}
+  });
+  timeline.to({}, {duration:1},0)
+   .to(outgoing,{autoAlpha:0,y:-24,duration:.13,stagger:.015},.16)
+   .to(secondary,{yPercent:0,duration:.28},.28)
+   .set(primary,{autoAlpha:0},.56)
+   .to(incoming,{autoAlpha:1,y:0,duration:chapter.id==='about'?.10:.17,stagger:chapter.id==='about'?.02:.025},.59);
+  if(chapter.id==='home'){
+   timeline.to('.hero__photo',{scale:1.045,duration:.55},0);
+   timeline.fromTo('.invitation-card',{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)',duration:.18},.56);
+   timeline.fromTo('.invitation-card h2,.invitation-card__brand',{opacity:0,y:14},{opacity:1,y:0,duration:.12,stagger:.045},.68);
+  }
+  if(chapter.id==='about'){
+   const photograph=$('.architecture-photo',secondary);
+   timeline.fromTo('.about__architecture>h3>span',{autoAlpha:0,y:12},{autoAlpha:1,y:0,duration:.08,stagger:.025},.60);
+   timeline.to(incoming,{autoAlpha:0,y:-18,duration:.10},.80);
+   timeline.to(photograph,{y:()=>-Math.max(0,photograph.offsetHeight-$('.chapter__stage',chapter).offsetHeight),duration:.20},.80);
+  }
+  if(chapter.id==='investment'){
+   const stage=$('.chapter__stage',chapter);
+   const photographs=$$<HTMLElement>('.investment-collage>div',secondary);
+   // The original showcase assembles three columns around a stationary title.
+   // Each photograph starts just outside the stage and settles into its authored crop.
+   photographs.forEach((photograph,index)=>{
+    const fromTop=['collage__marina','collage__golf','collage__living'].some(name=>photograph.classList.contains(name));
+    timeline.fromTo(photograph,{y:()=>fromTop?-(photograph.offsetTop+photograph.offsetHeight+24):stage.offsetHeight-photograph.offsetTop+24},
+     {y:0,duration:.25,ease:'power2.out'},.56+(index%3)*.035);
+   });
+  }
+  if(chapter.id==='layouts')timeline.fromTo($$('.layout-card',secondary),{y:90},{y:0,duration:.24,stagger:.045,ease:'power2.out'},.61);
+  if(chapter.id==='infrastructure')timeline.fromTo('.wellbeing__closing>div',{y:16},{y:0,duration:.4},.56);
   if(timeline.scrollTrigger)stories.set(chapter,timeline.scrollTrigger);
  });
- return()=>{chapters.forEach(chapter=>{chapter.classList.remove('is-story');chapter.style.height='';setView(chapter,Number(chapter.dataset.baseView)||0);$('.state-primary',chapter).style.pointerEvents='';$('.state-secondary',chapter).style.pointerEvents='';});stories.clear();};
+ if(restoreScroll&&restoreTarget)modeRestoreFrame=requestAnimationFrame(()=>{
+  ScrollTrigger.refresh();
+  const trigger=stories.get(restoreTarget);
+  if(trigger)window.scrollTo({top:storyPosition(trigger,restoreTarget.id,restoreView),behavior:'instant'});
+  else restoreTarget.scrollIntoView({block:'start',behavior:'instant'});
+  scheduleHeader();
+ });
+ return()=>{
+  cancelAnimationFrame(modeRestoreFrame);
+  const active=sections.find(section=>section.id===currentChapter);
+  const view=currentStoryView;
+  chapters.forEach(chapter=>{chapter.classList.remove('is-story');chapter.style.removeProperty('--story-duration');setView(chapter,chapter===active?view:Number(chapter.dataset.baseView)||0);});
+  stories.clear();
+  if(active&&scrollY>0)modeRestoreFrame=requestAnimationFrame(()=>{
+   const parts=chapterParts.get(active);
+   const target=desktop.matches||!parts?active:view?parts.secondary:parts.primary;
+   target.scrollIntoView({block:'start',behavior:'instant'});
+   scheduleHeader();
+  });
+ };
 });
-media.add('(max-width:1100px)',()=>{chapters.forEach(chapter=>{$('.state-primary',chapter).inert=false;$('.state-secondary',chapter).inert=false;});});
-media.add('(max-width:1100px) and (prefers-reduced-motion:no-preference)',()=>{$$('.wellbeing-cards article,.layout-card,.investment-metrics article,.contact__panel').forEach(element=>gsap.from(element,{y:24,opacity:0,duration:.8,ease:'power2.out',scrollTrigger:{trigger:element,start:'top 96%',once:true}}));});
-function chooseStory(chapter:HTMLElement,view:number){const trigger=stories.get(chapter);if(trigger){window.scrollTo({top:trigger.start+(trigger.end-trigger.start)*(view===0?.08:.75),behavior:'smooth'});}else{setView(chapter,view);scheduleHeader();}}
-function navigateTo(id:string){const target=document.getElementById(id);if(!target)return;const trigger=stories.get(target);const desired=['location','layouts','interiors'].includes(id)?1:0;if(trigger){window.scrollTo({top:trigger.start+(trigger.end-trigger.start)*(desired?.72:.04),behavior:reduced.matches?'instant':'smooth'});}else target.scrollIntoView({behavior:reduced.matches?'instant':'smooth',block:'start'});}
-function updateHeader(){headerPending=false;const y=window.scrollY;header.classList.toggle('is-scrolled',y>60);const hero=$('#home'),heroProgress=stories.get(hero)?.progress||0;header.classList.toggle('is-home',desktop.matches&&hero.getBoundingClientRect().bottom>innerHeight*.5&&heroProgress<.2&&y<innerHeight*.5);let active='home';for(const element of $$<HTMLElement>('main>section')){const r=element.getBoundingClientRect();if(r.top<=innerHeight*.3&&r.bottom>innerHeight*.3)active=element.id;}
- let light=false;for(const element of $$('.layouts__details,.interiors__details')){const r=element.getBoundingClientRect();const chapter=element.closest<HTMLElement>('.chapter')!;if(r.top<=95&&r.bottom>95&&(!desktop.matches||chapter.dataset.view==='1'))light=true;}
- header.classList.toggle('is-light',light);$$<HTMLAnchorElement>('.desktop-nav a').forEach(a=>{if(a.hash==='#'+active)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});const available=document.documentElement.scrollHeight-innerHeight;$('.reading-progress').style.transform=`scaleX(${available>0?Math.max(0,Math.min(1,y/available)):0})`;}
+desktop.addEventListener('change',()=>{chapters.forEach(chapter=>setView(chapter,Number(chapter.dataset.view)||0));scheduleHeader();});
+media.add('(max-width:1100px) and (prefers-reduced-motion:no-preference)',()=>{
+ $$('.wellbeing-cards article,.layout-card,.investment-metrics article,.contact__panel').forEach(element=>{
+  if(element.dataset.revealed==='true')return;
+  gsap.from(element,{y:18,opacity:0,duration:.65,ease:'power2.out',scrollTrigger:{trigger:element,start:'top 94%',once:true,onEnter:()=>{element.dataset.revealed='true';}}});
+ });
+});
+function storyPosition(trigger:ScrollTrigger,id:string,view:number){return trigger.start+(trigger.end-trigger.start)*(view?(id==='about'?.76:.88):.07);}
+function chooseStory(chapter:HTMLElement,view:number){
+ const trigger=stories.get(chapter);
+ if(trigger)window.scrollTo({top:storyPosition(trigger,chapter.id,view),behavior:reduced.matches?'instant':'smooth'});
+ else{setView(chapter,view);scheduleHeader();}
+}
+function navigateTo(id:string){
+ const target=document.getElementById(id);if(!target)return;
+ if(id==='main-content'){target.focus({preventScroll:true});target.scrollIntoView({behavior:'instant',block:'start'});return;}
+ const trigger=stories.get(target);
+ const desired=['location','layouts','interiors'].includes(id)?1:0;
+ if(trigger)window.scrollTo({top:storyPosition(trigger,id,desired),behavior:reduced.matches?'instant':'smooth'});
+ else{if(target.matches('[data-story]'))setView(target,desired);target.scrollIntoView({behavior:reduced.matches?'instant':'smooth',block:'start'});}
+}
+function updateHeader(){
+ headerPending=false;
+ const y=scrollY,h=innerHeight;
+ const rects=sections.map(element=>({element,rect:element.getBoundingClientRect()}));
+ const hero=rects.find(item=>item.element.id==='home');
+ const active=rects.find(item=>item.rect.top<=h*.3&&item.rect.bottom>h*.3)?.element.id||currentChapter;
+ let light=false;
+ for(const item of rects){
+  if(!['layouts','interiors'].includes(item.element.id))continue;
+  const details=chapterParts.get(item.element)!.secondary;
+  const r=details.getBoundingClientRect();
+  if(r.top<=95&&r.bottom>95&&(!desktop.matches||item.element.dataset.view==='1'))light=true;
+ }
+ const available=document.documentElement.scrollHeight-h;
+ currentChapter=active;
+ const activeElement=sections.find(section=>section.id===active);
+ const activeParts=activeElement&&chapterParts.get(activeElement);
+ currentStoryView=activeParts?(desktop.matches?Number(activeElement!.dataset.view)||0:activeParts.secondary.getBoundingClientRect().top<=h*.5?1:0):0;
+ header.classList.toggle('is-scrolled',y>60);
+ header.classList.toggle('is-home',desktop.matches&&!!hero&&hero.rect.bottom>h*.5&&(stories.get(hero.element)?.progress||0)<.18&&y<h*.5);
+ header.classList.toggle('is-light',light);
+ navLinks.forEach(link=>{if(link.hash==='#'+active){if(!link.hasAttribute('aria-current'))link.setAttribute('aria-current','location');}else if(link.hasAttribute('aria-current'))link.removeAttribute('aria-current');});
+ readingProgress.style.transform=`scaleX(${available>0?Math.max(0,Math.min(1,y/available)):0})`;
+}
 function scheduleHeader(){if(!headerPending){headerPending=true;requestAnimationFrame(updateHeader);}}
-window.addEventListener('scroll',scheduleHeader,{passive:true});window.addEventListener('resize',scheduleHeader,{passive:true});updateHeader();
+window.addEventListener('scroll',scheduleHeader,{passive:true});
+window.addEventListener('resize',scheduleHeader,{passive:true});
+updateHeader();
+motionInitialized=true;
 
 document.addEventListener('click',event=>{const target=(event.target as HTMLElement).closest<HTMLElement>('button,a');if(!target)return;
+ dialogClickOrigin=target;queueMicrotask(()=>{if(dialogClickOrigin===target)dialogClickOrigin=undefined;});
  if(target.hasAttribute('data-close'))target.closest<HTMLDialogElement>('dialog')?.close();
  else if(target.dataset.modal)openDialog(target.dataset.modal);
  else if(target.hasAttribute('data-enquire'))openEnquiry(target.dataset.enquire||'Six Senses Residences Dubai Marina');
  else if(target.hasAttribute('data-privacy'))openDialog('privacy-dialog');else if(target.hasAttribute('data-terms'))openDialog('terms-dialog');
  else if(target.dataset.unit)showUnit(target.dataset.unit);
  else if(target.dataset.planZoom){const unit=config.units.find(u=>u.id===target.dataset.planZoom);if(unit)openZoom(unit.plan,`${unit.name} floor plans`,unit.name,true);}
- else if(target.hasAttribute('data-gallery-next'))showGallery(galleryIndex+1);else if(target.hasAttribute('data-gallery-prev'))showGallery(galleryIndex-1);
- else if(target.hasAttribute('data-gallery-zoom')){if(suppressGalleryClick){suppressGalleryClick=false;return;}const item=config.gallery[galleryIndex];openZoom(item.image,item.alt,'Six Senses interiors');}
+ else if(target.hasAttribute('data-gallery-next'))stepGallery(1);else if(target.hasAttribute('data-gallery-prev'))stepGallery(-1);
+ else if(target.hasAttribute('data-gallery-zoom'))openGallery();
  else if(target.hasAttribute('data-photo'))openZoom(target.dataset.photo!,target.dataset.photoTitle||'Six Senses',target.dataset.photoTitle||'Six Senses');
  else if(target.hasAttribute('data-location-zoom'))openZoom($<HTMLImageElement>('.location-map img').src,'Six Senses Dubai Marina location map','Dubai Marina');
- else if(target.hasAttribute('data-zoom-in')){zoom+=.5;updateZoom();}else if(target.hasAttribute('data-zoom-out')){zoom-=.5;updateZoom();}else if(target.hasAttribute('data-zoom-reset'))resetZoom();
+ else if(target.hasAttribute('data-zoom-in'))changeZoom(.5);else if(target.hasAttribute('data-zoom-out'))changeZoom(-.5);else if(target.hasAttribute('data-zoom-reset'))resetZoom();
  else if(target.hasAttribute('data-layout-next'))scrollLayout(1);else if(target.hasAttribute('data-layout-prev'))scrollLayout(-1);
  else if(target.hasAttribute('data-story-switch'))chooseStory(target.closest<HTMLElement>('.chapter')!,Number(target.dataset.storySwitch));
  if(target instanceof HTMLAnchorElement&&target.hash&&target.origin===location.origin&&target.pathname===location.pathname){const id=target.hash.slice(1);if(document.getElementById(id)){event.preventDefault();if(target.closest('#menu-dialog'))$<HTMLDialogElement>('#menu-dialog').close();navigateTo(id);history.replaceState({},'',target.hash);}}
@@ -142,5 +251,9 @@ document.addEventListener('click',event=>{const target=(event.target as HTMLElem
 
 // The intro is brief, optional and never prevents the document from loading.
 try{if(!reduced.matches&&!sessionStorage.getItem('six-intro-seen')){sessionStorage.setItem('six-intro-seen','1');const intro=$('.intro');intro.classList.add('is-active');gsap.timeline({onComplete:()=>intro.classList.remove('is-active')}).fromTo('.intro .six-logo',{opacity:0,scale:1.1},{opacity:1,scale:1.25,duration:.35}).to('.intro__line',{scaleX:1,duration:.35},.15).to(intro,{opacity:0,duration:.35},.65);}}catch{/* Storage restrictions simply skip the optional intro. */}
-window.addEventListener('load',()=>ScrollTrigger.refresh(),{once:true});document.fonts.ready.then(()=>ScrollTrigger.refresh());
+let refreshFrame=0;
+function refreshStories(){cancelAnimationFrame(refreshFrame);refreshFrame=requestAnimationFrame(()=>{ScrollTrigger.refresh();scheduleHeader();});}
+window.addEventListener('load',refreshStories,{once:true});
+window.addEventListener('pageshow',refreshStories);
+document.fonts.ready.then(refreshStories);
 const unitParam=new URLSearchParams(location.search).get('unit');if(unitParam)showUnit(unitParam);
