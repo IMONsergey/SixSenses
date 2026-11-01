@@ -26,4 +26,8 @@ The skip link focuses `main` and the next Tab enters its content. The closed zoo
 
 The integration owner reviewed the latest WebKit About reading and investment collage screenshots. About text was fully visible and the collage composition was accepted. Automated coverage, commands and diagnostic performance limits are in `docs/MOTION-QA.md`; additional manual gesture scenarios are separately identified in `docs/MEDIA-QA-2026-11-01.md`.
 
-Source implementation and the listed server checks are complete. Deployment of this polish and production loading comparisons are recorded separately; this checkpoint does not claim that the polish has been published.
+### Subsequent publication confirmation
+
+The release owner confirmed motion UI commit `c326bef95c37fa22e702302756ef7939bfcf94e6` in READY deployment `dpl_B8dyhkonisHH5CmXGSQyAvkUuFLD`. This supersedes the original handoff, which had completed the source implementation and listed server checks but had not yet confirmed publication.
+
+The authoritative record for final commits, deployments and live acceptance across all five sites is [MOTION-RELEASE-2026-11-01.md](https://github.com/IMONsergey/LuxuryRealty/blob/main/docs/MOTION-RELEASE-2026-11-01.md). The server QA evidence and diagnostic limits above remain unchanged. Production loading comparisons are separate from that evidence; this documentation-only publication-status correction adds no new test or performance result.
