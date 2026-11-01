@@ -7,17 +7,83 @@ type GalleryItem={image:string;alt:string};
 const config:{units:Unit[];gallery:GalleryItem[]}=JSON.parse(document.querySelector('#six-data')?.textContent||'{}');
 const $=<T extends Element=HTMLElement>(selector:string,root:ParentNode=document)=>root.querySelector<T>(selector)!;
 const $$=<T extends Element=HTMLElement>(selector:string,root:ParentNode=document)=>[...root.querySelectorAll<T>(selector)];
+// Reserve the initial fragment while pinned geometry is being installed. WebKit
+// can otherwise reapply its native fragment position after our load navigation.
+const initialHash=document.getElementById(location.hash.slice(1))?location.hash:'';
+let initialHashPending=Boolean(initialHash);
+if(initialHashPending){const url=new URL(location.href);url.hash='';history.replaceState(history.state,'',url);}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const desktop=matchMedia('(min-width:1101px) and (min-height:760px) and (pointer:fine)');
 const priorFocus=new WeakMap<HTMLDialogElement,HTMLElement>();
 const dialogStack:HTMLDialogElement[]=[];
 let dialogClickOrigin:HTMLElement|undefined;
-function openDialog(id:string){const dialog=document.getElementById(id) as HTMLDialogElement|null;if(!dialog||dialog.open)return;priorFocus.set(dialog,dialogClickOrigin||document.activeElement as HTMLElement);dialog.showModal();dialogStack.push(dialog);document.documentElement.classList.add('modal-open');document.body.classList.add('modal-open');if(id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','true');}
+type DialogData=Record<string,string|boolean>;
+type DialogFrame={id:string;data?:DialogData};
+type DialogHistory={version:1;stack:DialogFrame[];parent?:DialogFrame[]};
+const historyKey='sixUiV3';
+const dialogData=new Map<string,DialogData>();
+const historyClosures=new WeakSet<HTMLDialogElement>();
+let restoringHistory=false,historyPending=false;
+const pendingOpens:Array<()=>void>=[];
+let knownHash=location.hash;
+function releaseInitialHash(){
+ if(!initialHashPending)return;initialHashPending=false;
+ if(!location.hash){const url=new URL(location.href);url.hash=initialHash;history.replaceState(history.state,'',url);knownHash=url.hash;}
+}
+function activeDialogs():DialogFrame[]{return dialogStack.filter(dialog=>dialog.open).map(dialog=>({id:dialog.id,...(dialogData.has(dialog.id)?{data:dialogData.get(dialog.id)}:{})}));}
+function sameFrames(a:DialogFrame[],b:DialogFrame[]){return JSON.stringify(a)===JSON.stringify(b);}
+function readDialogHistory(value:unknown):DialogHistory|null{
+ const state=(value as Record<string,unknown>|null)?.[historyKey] as DialogHistory|undefined;
+ if(state?.version!==1||!Array.isArray(state.stack))return null;
+ const valid=(frames:DialogFrame[])=>frames.every(frame=>typeof frame?.id==='string'&&document.getElementById(frame.id) instanceof HTMLDialogElement&&(!frame.data||Object.values(frame.data).every(value=>typeof value==='string'||typeof value==='boolean')))&&new Set(frames.map(frame=>frame.id)).size===frames.length;
+ return valid(state.stack)&&(!state.parent||Array.isArray(state.parent)&&valid(state.parent))?state:null;
+}
+function dialogURL(stack:DialogFrame[],url=new URL(location.href)){
+ const unit=stack.find(frame=>frame.id==='unit-dialog')?.data?.unit;
+ if(typeof unit==='string'&&config.units.some(item=>item.id===unit))url.searchParams.set('unit',unit);else url.searchParams.delete('unit');
+ return url;
+}
+function writeDialogHistory(mode:'push'|'replace',stack=activeDialogs(),url?:URL){
+ if(restoringHistory)return;
+ const previous=readDialogHistory(history.state);
+ const state:DialogHistory={version:1,stack,...(mode==='push'?{parent:previous?.stack||[]}:(previous?.parent?{parent:previous.parent}:{}))};
+ history[mode==='push'?'pushState':'replaceState']({...history.state,[historyKey]:state},'',dialogURL(stack,url));
+}
+function syncDialogLock(){const open=Boolean(document.querySelector('dialog[open]'));document.documentElement.classList.toggle('modal-open',open);document.body.classList.toggle('modal-open',open);}
+function openDialog(id:string,data?:DialogData,origin?:HTMLElement){
+ const trigger=origin||dialogClickOrigin||document.activeElement as HTMLElement;
+ if(historyPending&&!restoringHistory){pendingOpens.push(()=>openDialog(id,data,trigger));return;}
+ const dialog=document.getElementById(id) as HTMLDialogElement|null;if(!dialog)return;
+ const changed=data&&JSON.stringify(data)!==JSON.stringify(dialogData.get(id));if(data)dialogData.set(id,data);
+ if(dialog.open){if(changed)writeDialogHistory('replace');return;}
+ if(trigger instanceof HTMLElement)priorFocus.set(dialog,trigger);
+ const stale=dialogStack.indexOf(dialog);if(stale!==-1)dialogStack.splice(stale,1);
+ dialog.showModal();dialog.scrollTo({top:0,behavior:'instant'});dialogStack.push(dialog);syncDialogLock();
+ if(id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','true');
+ writeDialogHistory('push');
+}
+function closeDialog(dialog:HTMLDialogElement){
+ if(!dialog.open||historyPending)return;
+ const current=activeDialogs(),index=current.findIndex(frame=>frame.id===dialog.id),target=current.slice(0,index);
+ const saved=readDialogHistory(history.state);
+ if(saved?.parent&&sameFrames(saved.stack,current)&&sameFrames(saved.parent,target)){historyPending=true;history.back();return;}
+ restoringHistory=true;
+ for(const frame of current.slice(index).reverse()){const item=$<HTMLDialogElement>('#'+frame.id);historyClosures.add(item);item.close();}
+ restoringHistory=false;writeDialogHistory('replace',target);syncDialogLock();
+}
 $$<HTMLDialogElement>('dialog').forEach(dialog=>{
- dialog.addEventListener('close',()=>{const index=dialogStack.indexOf(dialog);if(index!==-1)dialogStack.splice(index,1);if(!document.querySelector('dialog[open]')){document.body.classList.remove('modal-open');document.documentElement.classList.remove('modal-open');}if(dialog.id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','false');const target=priorFocus.get(dialog),remaining=dialogStack.filter(item=>item.open).at(-1);if(target?.isConnected&&target.getClientRects().length&&!target.closest('dialog:not([open]),[inert]')&&(!remaining||target.closest('dialog')===remaining))target.focus({preventScroll:true});if(dialog.id==='unit-dialog'){const url=new URL(location.href);url.searchParams.delete('unit');history.replaceState({},'',url);}});
- dialog.addEventListener('click',event=>{if(!dialog.classList.contains('small-sheet')||event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close();});
+ dialog.addEventListener('cancel',event=>{event.preventDefault();closeDialog(dialog);});
+ dialog.addEventListener('close',()=>{
+  const fromHistory=historyClosures.delete(dialog);if(dialog.open)return;
+  const index=dialogStack.indexOf(dialog);if(index!==-1)dialogStack.splice(index,1);syncDialogLock();
+  if(dialog.id==='menu-dialog')$('.menu-toggle').setAttribute('aria-expanded','false');
+  const target=priorFocus.get(dialog),remaining=dialogStack.filter(item=>item.open).at(-1);
+  if(target?.isConnected&&target.getClientRects().length&&!target.closest('dialog:not([open]),[inert]')&&(!remaining||target.closest('dialog')===remaining))target.focus({preventScroll:true});
+  if(!fromHistory&&!restoringHistory)writeDialogHistory('replace');
+ });
+ dialog.addEventListener('click',event=>{if(!dialog.classList.contains('small-sheet')||event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)closeDialog(dialog);});
 });
-function showUnit(id:string){const unit=config.units.find(u=>u.id===id);if(!unit)return;$$('[data-unit-panel]').forEach(p=>p.hidden=p.dataset.unitPanel!==id);$('#unit-title').textContent=unit.name;$$('#unit-dialog [data-unit]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.unit===id)));openDialog('unit-dialog');$('#unit-dialog').scrollTo({top:0,behavior:'instant'});const url=new URL(location.href);url.searchParams.set('unit',id);history.replaceState({},'',url);}
+function showUnit(id:string){const unit=config.units.find(u=>u.id===id);if(!unit)return;$$('[data-unit-panel]').forEach(p=>p.hidden=p.dataset.unitPanel!==id);$('#unit-title').textContent=unit.name;$$('#unit-dialog [data-unit]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.unit===id)));openDialog('unit-dialog',{unit:id});$('#unit-dialog').scrollTo({top:0,behavior:'instant'});}
 
 const {stepGallery,openGallery,openZoom,changeZoom,resetZoom,scrollLayout}=initializeMediaInteractions({...config,openDialog},reduced);
 
@@ -27,9 +93,9 @@ const formStates=new WeakMap<HTMLFormElement,FormState>();
 function newState(context:string):FormState{return{startedAt:Date.now(),submissionId:crypto.randomUUID(),context,pending:false,touched:false,fingerprint:'',completed:false};}
 function clearErrors(form:HTMLFormElement){$$('[data-error]',form).forEach(e=>e.textContent='');$$('[aria-invalid]',form).forEach(e=>e.removeAttribute('aria-invalid'));$('[data-form-status]',form).textContent='';}
 function fieldError(form:HTMLFormElement,name:string,message:string){if(name==='name')name='firstName';const input=form.elements.namedItem(name) as HTMLElement|null;input?.setAttribute('aria-invalid','true');const label=form.querySelector(`[data-error="${name}"]`);if(label)label.textContent=message;}
-function openEnquiry(context:string){
+function openEnquiry(context:string,restore=false){
  const form=$<HTMLFormElement>('#modal-form'),previous=formStates.get(form),body=form.closest<HTMLElement>('.enquiry-body')!;
- if(previous?.pending){openDialog('enquiry-dialog');return;}
+ if(previous?.pending||restore&&previous?.context===context){openDialog('enquiry-dialog',{context:previous.context});return;}
  let state=previous;
  if(!state||state.completed){
   form.reset();$('.other-country',form).hidden=true;$<HTMLInputElement>('[name=otherCountry]',form).required=false;
@@ -37,7 +103,7 @@ function openEnquiry(context:string){
  }
  state.context=context;
  if(Date.now()-state.startedAt>7*24*60*60*1000)state.startedAt=Date.now();
- $('[data-interest]',body).textContent=context;$('.enquiry-heading',body).hidden=false;$('.enquiry-success',body).hidden=true;form.hidden=false;clearErrors(form);$('[data-submit-label]',form).textContent=state.fingerprint?'Try again':'Register';openDialog('enquiry-dialog');$('#enquiry-dialog').scrollTo({top:0,behavior:'instant'});
+ $('[data-interest]',body).textContent=context;$('.enquiry-heading',body).hidden=false;$('.enquiry-success',body).hidden=true;form.hidden=false;clearErrors(form);$('[data-submit-label]',form).textContent=state.fingerprint?'Try again':'Register';openDialog('enquiry-dialog',{context});$('#enquiry-dialog').scrollTo({top:0,behavior:'instant'});
 }
 $$<HTMLFormElement>('[data-enquiry-form]').forEach(form=>{
  formStates.set(form,newState('Six Senses Residences Dubai Marina'));
@@ -65,7 +131,7 @@ $$<HTMLFormElement>('[data-enquiry-form]').forEach(form=>{
   controls.forEach(({element})=>element.disabled=true);
   $('[data-submit-label]',form).textContent='Sending...';$('[data-form-status]',form).textContent='Sending your enquiry…';
   const controller=new AbortController(),timeout=window.setTimeout(()=>controller.abort(),20000);
-  try{const response=await fetch('/api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});const result=await response.json().catch(()=>null);if(!response.ok||result?.ok!==true||typeof result?.id!=='string'||!result.id){if(result?.fields&&typeof result.fields==='object')for(const[k,v]of Object.entries(result.fields))fieldError(form,k,String(v));throw new Error(typeof result?.error==='string'?result.error:'Your enquiry could not be sent. Please try again.');}
+  try{const response=await fetch('/api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});const result=await response.json().catch(()=>null);if(!response.ok||result?.ok!==true||typeof result?.id!=='string'||!result.id||result.id!==payload.submissionId){if(result?.fields&&typeof result.fields==='object')for(const[k,v]of Object.entries(result.fields))fieldError(form,k,String(v));throw new Error(typeof result?.error==='string'?result.error:response.ok?'Your enquiry could not be confirmed. Please try again.':'Your enquiry could not be sent. Please try again.');}
    state.completed=true;const body=form.closest<HTMLElement>('.enquiry-body')!;form.hidden=true;$('.enquiry-heading',body).hidden=true;$('[data-success-interest]',body).textContent=state.context;const success=$('.enquiry-success',body);success.hidden=false;success.focus();success.scrollIntoView({block:'center',behavior:reduced.matches?'instant':'smooth'});
   }catch(error){$('[data-form-status]',form).textContent=error instanceof Error&&error.name==='AbortError'?'The connection timed out. Your details are still here; please try again.':error instanceof Error?error.message:'Your enquiry could not be sent. Please try again.';$('[data-submit-label]',form).textContent='Try again';}
   finally{clearTimeout(timeout);state.pending=false;form.removeAttribute('aria-busy');controls.forEach(({element,disabled})=>element.disabled=disabled);}
@@ -97,6 +163,11 @@ function setView(chapter:HTMLElement,view:number){
 }
 chapters.forEach(chapter=>setView(chapter,Number(chapter.dataset.baseView)||0));
 const stories=new Map<HTMLElement,ScrollTrigger>();
+function syncStoryViews(){
+ // Refresh and history restoration can render a timeline with callbacks suppressed.
+ // Accessibility and pointer state must follow the frame actually on screen.
+ for(const [chapter,trigger] of stories){const progress=trigger.animation?.progress()||0;setView(chapter,progress>=(chapter.id==='investment'?.305:.54)?1:0);}
+}
 type ReadingPosition={section:HTMLElement;anchor:HTMLElement;top:number;y:number;width:number;height:number;view:number;mode:'story'|'static'|'flow';progress:number};
 function readPosition():ReadingPosition{
  const section=sections.find(element=>{const r=element.getBoundingClientRect();return r.top<=innerHeight*.3&&r.bottom>innerHeight*.3;})||sections[0];
@@ -146,7 +217,7 @@ motionLifecycle.addEventListener('matchMedia',()=>{
   next=scrollY+rect.top-top;
  }
  window.scrollTo({top:Math.max(0,next),behavior:'instant'});
- ScrollTrigger.update();
+ ScrollTrigger.update();syncStoryViews();
  modePosition=null;stablePosition=readPosition();scheduleHeader();
 });
 const media=gsap.matchMedia();
@@ -231,20 +302,24 @@ media.add('(max-width:1100px) and (prefers-reduced-motion:no-preference)',()=>{
 });
 function storyPosition(trigger:ScrollTrigger,id:string,view:number){return trigger.start+(trigger.end-trigger.start)*(view?(id==='about'?.76:.88):.07);}
 function chooseStory(chapter:HTMLElement,view:number){
+ releaseInitialHash();
  const trigger=stories.get(chapter);
  if(trigger)window.scrollTo({top:storyPosition(trigger,chapter.id,view),behavior:reduced.matches?'instant':'smooth'});
  else{setView(chapter,view);scheduleHeader();}
 }
-function navigateTo(id:string){
+function navigateTo(id:string,immediate=false){
  const target=document.getElementById(id);if(!target)return;
  if(id==='main-content'){target.focus({preventScroll:true});target.scrollIntoView({behavior:'instant',block:'start'});return;}
  const trigger=stories.get(target);
  const desired=['location','layouts','interiors'].includes(id)?1:0;
- if(trigger)window.scrollTo({top:storyPosition(trigger,id,desired),behavior:reduced.matches?'instant':'smooth'});
- else{if(target.matches('[data-story]'))setView(target,desired);target.scrollIntoView({behavior:reduced.matches?'instant':'smooth',block:'start'});}
+ if(trigger){
+  window.scrollTo({top:storyPosition(trigger,id,desired),behavior:immediate||reduced.matches?'instant':'smooth'});
+  if(immediate){trigger.update();trigger.getTween()?.progress(1);syncStoryViews();}
+ }else{if(target.matches('[data-story]'))setView(target,desired);target.scrollIntoView({behavior:immediate||reduced.matches?'instant':'smooth',block:'start'});}
 }
 function updateHeader(){
  headerPending=false;
+ syncStoryViews();
  const y=scrollY,h=innerHeight;
  const rects=sections.map(element=>({element,rect:element.getBoundingClientRect()}));
  const hero=rects.find(item=>item.element.id==='home');
@@ -270,9 +345,57 @@ window.addEventListener('scroll',scheduleHeader,{passive:true});
 window.addEventListener('resize',scheduleHeader,{passive:true});
 updateHeader();
 
+function restoreDialogFrames(target:DialogFrame[]){
+ const current=activeDialogs();let shared=0;
+ while(shared<current.length&&shared<target.length&&current[shared].id===target[shared].id)shared++;
+ restoringHistory=true;
+ try{
+  for(const frame of current.slice(shared).reverse()){const dialog=$<HTMLDialogElement>('#'+frame.id);historyClosures.add(dialog);dialog.close();}
+  for(const [index,frame] of target.entries()){
+   if(index<shared&&sameFrames([current[index]],[frame]))continue;
+   if(frame.id==='unit-dialog'&&typeof frame.data?.unit==='string')showUnit(frame.data.unit);
+   else if(frame.id==='enquiry-dialog')openEnquiry(typeof frame.data?.context==='string'?frame.data.context:'Six Senses Residences Dubai Marina',true);
+   else if(frame.id==='zoom-dialog'&&typeof frame.data?.src==='string')void openZoom(frame.data.src,String(frame.data.alt||''),String(frame.data.title||'Six Senses'),frame.data.plan===true);
+   else openDialog(frame.id,frame.data);
+  }
+ }finally{restoringHistory=false;syncDialogLock();}
+}
+function routeDialogFrames():DialogFrame[]{
+ const saved=readDialogHistory(history.state),unit=new URLSearchParams(location.search).get('unit');
+ const validUnit=config.units.some(item=>item.id===unit);
+ if(validUnit){
+  const stored=saved?.stack.find(frame=>frame.id==='unit-dialog');
+  return stored?.data?.unit===unit?saved!.stack:[{id:'unit-dialog',data:{unit:unit!}}];
+ }
+ return saved?.stack.some(frame=>frame.id==='unit-dialog')?[]:saved?.stack||[];
+}
+function followLocation(){
+ historyPending=false;restoreDialogFrames(routeDialogFrames());
+ // A native hash navigation creates an entry without our state. Give subsequent
+ // child dialogs that real parent before recording their own history entry.
+ if(!readDialogHistory(history.state))writeDialogHistory('replace');
+ if(location.hash!==knownHash){
+  knownHash=location.hash;const href=location.href;
+  requestAnimationFrame(()=>{if(location.href===href)navigateTo(location.hash.slice(1)||'home',true);});
+ }
+ for(const action of pendingOpens.splice(0))action();
+}
+window.addEventListener('popstate',followLocation);
+window.addEventListener('hashchange',followLocation);
+function navigateHash(id:string,fromMenu=false){
+ releaseInitialHash();
+ if(id==='main-content'){navigateTo(id,true);return;}
+ if(historyPending){pendingOpens.push(()=>navigateHash(id,fromMenu));return;}
+ const url=new URL(location.href);url.hash=id;
+ const changed=location.hash!==url.hash||activeDialogs().length>0;
+ if(activeDialogs().length)restoreDialogFrames([]);
+ if(changed)writeDialogHistory(fromMenu?'replace':'push',[],url);
+ knownHash=url.hash;navigateTo(id);
+}
 document.addEventListener('click',event=>{const target=(event.target as HTMLElement).closest<HTMLElement>('button,a');if(!target)return;
+ if(historyPending){event.preventDefault();pendingOpens.push(()=>{if(target.isConnected&&target.getClientRects().length&&!target.closest('dialog:not([open]),[inert]'))target.click();});return;}
  dialogClickOrigin=target;queueMicrotask(()=>{if(dialogClickOrigin===target)dialogClickOrigin=undefined;});
- if(target.hasAttribute('data-close'))target.closest<HTMLDialogElement>('dialog')?.close();
+ if(target.hasAttribute('data-close')){const dialog=target.closest<HTMLDialogElement>('dialog');if(dialog)closeDialog(dialog);}
  else if(target.dataset.modal)openDialog(target.dataset.modal);
  else if(target.hasAttribute('data-enquire'))openEnquiry(target.dataset.enquire||'Six Senses Residences Dubai Marina');
  else if(target.hasAttribute('data-privacy'))openDialog('privacy-dialog');else if(target.hasAttribute('data-terms'))openDialog('terms-dialog');
@@ -285,14 +408,19 @@ document.addEventListener('click',event=>{const target=(event.target as HTMLElem
  else if(target.hasAttribute('data-zoom-in'))changeZoom(.5);else if(target.hasAttribute('data-zoom-out'))changeZoom(-.5);else if(target.hasAttribute('data-zoom-reset'))resetZoom();
  else if(target.hasAttribute('data-layout-next'))scrollLayout(1);else if(target.hasAttribute('data-layout-prev'))scrollLayout(-1);
  else if(target.hasAttribute('data-story-switch'))chooseStory(target.closest<HTMLElement>('.chapter')!,Number(target.dataset.storySwitch));
- if(target instanceof HTMLAnchorElement&&target.hash&&target.origin===location.origin&&target.pathname===location.pathname){const id=target.hash.slice(1);if(document.getElementById(id)){event.preventDefault();if(target.closest('#menu-dialog'))$<HTMLDialogElement>('#menu-dialog').close();navigateTo(id);history.replaceState({},'',target.hash);}}
+ if(target instanceof HTMLAnchorElement&&target.hash&&target.origin===location.origin&&target.pathname===location.pathname){const id=target.hash.slice(1);if(document.getElementById(id)){event.preventDefault();navigateHash(id,Boolean(target.closest('#menu-dialog')));}}
 });
 
 // The intro is brief, optional and never prevents the document from loading.
 try{if(!reduced.matches&&!sessionStorage.getItem('six-intro-seen')){sessionStorage.setItem('six-intro-seen','1');const intro=$('.intro');intro.classList.add('is-active');gsap.timeline({onComplete:()=>intro.classList.remove('is-active')}).fromTo('.intro .six-logo',{opacity:0,scale:1.1},{opacity:1,scale:1.25,duration:.35}).to('.intro__line',{scaleX:1,duration:.35},.15).to(intro,{opacity:0,duration:.35},.65);}}catch{/* Storage restrictions simply skip the optional intro. */}
 let refreshFrame=0;
-function refreshStories(){cancelAnimationFrame(refreshFrame);refreshFrame=requestAnimationFrame(()=>{if(ScrollTrigger.getAll().length)ScrollTrigger.refresh();scheduleHeader();});}
+function refreshStories(){cancelAnimationFrame(refreshFrame);refreshFrame=requestAnimationFrame(()=>{if(ScrollTrigger.getAll().length)ScrollTrigger.refresh();syncStoryViews();if(initialHashPending&&document.readyState==='complete'){releaseInitialHash();navigateTo(location.hash.slice(1),true);}scheduleHeader();});}
+// An intentional scroll takes precedence over deferred initial positioning.
+window.addEventListener('wheel',releaseInitialHash,{passive:true});
+window.addEventListener('touchmove',releaseInitialHash,{passive:true});
+window.addEventListener('keydown',event=>{if(['PageDown','PageUp','Home','End','ArrowDown','ArrowUp',' '].includes(event.key)&&!(event.target as HTMLElement).closest('input,textarea,select'))releaseInitialHash();});
+ScrollTrigger.addEventListener('refresh',()=>{syncStoryViews();scheduleHeader();});
 window.addEventListener('load',refreshStories,{once:true});
 window.addEventListener('pageshow',refreshStories);
 document.fonts.ready.then(refreshStories);
-const unitParam=new URLSearchParams(location.search).get('unit');if(unitParam)showUnit(unitParam);
+restoreDialogFrames(routeDialogFrames());writeDialogHistory('replace');

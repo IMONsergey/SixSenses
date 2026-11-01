@@ -1,7 +1,7 @@
 import {gsap} from 'gsap';
 
 type GalleryItem = {image: string; alt: string};
-type MediaConfig = {gallery: GalleryItem[]; openDialog: (id: string) => void};
+type MediaConfig = {gallery: GalleryItem[]; openDialog: (id: string, data?:Record<string,string|boolean>) => void};
 type Point = {x: number; y: number};
 
 /** Media controls share the site's native dialogs, but own their gesture state. */
@@ -277,7 +277,7 @@ export function initializeMediaInteractions(config: MediaConfig, reduced: MediaQ
     zoomStage.setAttribute('aria-busy', 'true');
     $('#zoom-title').textContent = title;
     zoomDialog.classList.toggle('is-plan', plan);
-    config.openDialog('zoom-dialog');
+    config.openDialog('zoom-dialog',{src,alt,title,plan});
     zoomCanvas.style.willChange = 'transform';
     resetZoom();
     measureZoom();
@@ -357,6 +357,8 @@ export function initializeMediaInteractions(config: MediaConfig, reduced: MediaQ
   const zoomResize = new ResizeObserver(() => { if (zoomDialog.open) { clearPointers(); measureZoom(); } });
   zoomResize.observe(zoomStage, {box: 'border-box'});
   zoomDialog.addEventListener('close', () => {
+    // Native close events are queued; a fast history reopen already owns a new request.
+    if(zoomDialog.open)return;
     zoomRequest++;
     clearPointers();
     zoomCanvas.style.willChange = 'auto';
