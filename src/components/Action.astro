@@ -1,0 +1,7 @@
+---
+import { asset } from '../data/assets';
+interface Props { label: string; context?: string; href?: string; class?: string; light?: boolean }
+const {label, context, href, class:className='',light=false}=Astro.props;
+const classes=['action',light?'action--light':'',className].filter(Boolean).join(' ');
+---
+{href ? <a class={classes} href={href}><span>{label}</span><span class="action__arrow" aria-hidden="true"><img src={asset('1:489','imgVector383')} alt="" /></span></a> : <button type="button" class={classes} data-enquire={context||label}><span>{label}</span><span class="action__arrow" aria-hidden="true"><img src={asset('1:489','imgVector383')} alt="" /></span></button>}

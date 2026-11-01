@@ -1,0 +1,25 @@
+---
+interface Props { id: string; modal?: boolean }
+const {id,modal=false}=Astro.props;
+const countries=['United Arab Emirates','United Kingdom','United States','France','Germany','India','Saudi Arabia','Singapore','Switzerland','Other'];
+---
+<div class="enquiry-body">
+  <div class="enquiry-heading"><h2 id={`${id}-title`}>Register your<br />interest</h2><p>Please register your details below to submit your interest.</p><p class="selected-interest" data-interest>Six Senses Residences Dubai Marina</p></div>
+  <form id={id} class="enquiry-form" novalidate data-enquiry-form data-modal-form={String(modal)}>
+    <div class="honeypot" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <div class="form-row">
+      <label class="field"><span>First name</span><input name="firstName" autocomplete="given-name" required maxlength="60" aria-describedby={`${id}-firstName-error`} /><small id={`${id}-firstName-error`} data-error="firstName"></small></label>
+      <label class="field"><span>Last name</span><input name="lastName" autocomplete="family-name" required maxlength="60" aria-describedby={`${id}-lastName-error`} /><small id={`${id}-lastName-error`} data-error="lastName"></small></label>
+    </div>
+    <div class="form-row">
+      <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby={`${id}-email-error`} /><small id={`${id}-email-error`} data-error="email"></small></label>
+      <label class="field"><span>Phone number</span><input name="phone" type="tel" autocomplete="tel" required maxlength="30" aria-describedby={`${id}-phone-error`} /><small id={`${id}-phone-error`} data-error="phone"></small></label>
+    </div>
+    <label class="field field--select"><span>Country</span><select name="country" autocomplete="country-name" required aria-describedby={`${id}-country-error`}><option value="">Select your country</option>{countries.map(c=><option>{c}</option>)}</select><small id={`${id}-country-error`} data-error="country"></small></label>
+    <label class="field other-country" hidden><span>Your country</span><input name="otherCountry" autocomplete="off" maxlength="80" aria-describedby={`${id}-otherCountry-error`} /><small id={`${id}-otherCountry-error`} data-error="otherCountry"></small></label>
+    <label class="field field--message"><span>Message <small>(optional)</small></span><textarea name="message" rows="3" maxlength="1900" aria-describedby={`${id}-message-error`}></textarea><small id={`${id}-message-error`} data-error="message"></small></label>
+    <div class="form-bottom"><button class="register-button" type="submit"><span data-submit-label>Register</span><span aria-hidden="true">→</span></button><div class="consent-wrap"><label class="consent"><input type="checkbox" name="consent" required aria-describedby={`${id}-consent-error`} /><span>I agree to the <button type="button" class="text-link" data-terms>Terms &amp; Conditions</button> and <button type="button" class="text-link" data-privacy>Privacy Policy</button>, and to be contacted about my enquiry.</span></label><small id={`${id}-consent-error`} data-error="consent"></small></div></div>
+    <p class="form-status" role="status" aria-live="polite" data-form-status></p>
+  </form>
+  <div class="enquiry-success" hidden tabindex="-1"><p class="eyebrow" data-success-interest></p><h3>Thank you<br />for your interest</h3><p>Your enquiry has been received. The website owner can now review your request and contact you using the details you provided.</p>{modal?<button class="register-button" type="button" data-close><span>Return to residences</span><span aria-hidden="true">→</span></button>:<a class="register-button" href="#layouts"><span>Explore the layouts</span><span aria-hidden="true">→</span></a>}</div>
+</div>

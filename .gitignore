@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.vercel/
+.env
+.env.local
+.env.*.local
+artifacts/
+public/assets/*.png
+
+tests/output/
+
+.env*
+
+!.env.example

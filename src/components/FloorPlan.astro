@@ -1,0 +1,14 @@
+---
+import { asset } from '../data/assets';
+interface Props { type:'triplex'|'duplex'; class?:string }
+const {type,class:className=''}=Astro.props;
+const image=asset('1:594',type==='triplex'?'img2024051413271':'img2024051413411');
+---
+<figure class:list={['floor-plan',`floor-plan--${type}`,className]}>
+  <figcaption class="floor-plan__north">Sea / Skyline / Palm</figcaption>
+  <div class="floor-plan__drawings">
+    <div class="floor-plan__main"><img src={image} alt={type==='triplex'?'Triplex A plans for levels 117, 118 and 119':'Duplex B1 plans for levels 113 and 114'} loading="lazy" /></div>
+    <div class="floor-plan__orientation"><img src={image} alt="Building orientation of each level" loading="lazy" /></div>
+  </div>
+  <span class="floor-plan__south">Golf / City Urban</span>
+</figure>
